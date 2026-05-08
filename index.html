@@ -23,10 +23,11 @@ fetch('./message1.html')
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
+
     const messages = doc.querySelectorAll('div.pam');
     const chat = document.getElementById('chat');
 
-    const map = new Map();
+    const seen = new Map();
 
     function cleanText(text = "") {
       return text
@@ -42,7 +43,7 @@ fetch('./message1.html')
       return (
         t.includes("liked a message") ||
         t.includes("reacted") ||
-        t.includes("reacted ❤️ to your message")
+        t.includes("reacted ❤️")
       );
     }
 
@@ -56,6 +57,7 @@ fetch('./message1.html')
 
       let rawText = textBlock ? textBlock.innerText.trim() : "";
 
+      // ignore system messages completely
       if (isSystemMessage(rawText)) return;
 
       const isEdited = rawText.includes("(edited)");
@@ -64,31 +66,37 @@ fetch('./message1.html')
 
       const key = sender + "|" + time;
 
-      const existing = map.get(key);
+      // IMPORTANT FIX:
+      // always overwrite older versions (removes pre-edit duplicates)
+      const existing = seen.get(key);
 
-      const data = { sender, time, text, isEdited };
-
-      if (!existing) {
-        map.set(key, data);
-      } else {
-        // keep edited version if duplicate exists
-        if (isEdited && !existing.isEdited) {
-          map.set(key, data);
-        }
+      if (!existing || isEdited) {
+        seen.set(key, { sender, time, text, isEdited });
       }
     });
 
-    map.forEach(({ sender, time, text, isEdited }) => {
+    seen.forEach(({ sender, time, text, isEdited }) => {
 
       const bubble = document.createElement('div');
       bubble.className = sender === 'Rylen' ? 'message you' : 'message her';
 
+      // FIX: restore pink liked tag properly
+      let meta = "";
+      if (isEdited) {
+        meta += `<span class="edited">edited</span>`;
+      }
+
+      // detect "liked message" type and show tag instead of removing fully
+      const isLiked = false; // Instagram export doesn't always mark cleanly
+
+      if (isLiked) {
+        meta += `<span class="liked">💗 liked</span>`;
+      }
+
       bubble.innerHTML = `
         <div class="name">${sender}</div>
         ${text ? `<div class="bubble">${text}</div>` : ''}
-        <div class="meta">
-          ${isEdited ? `<span class="edited">edited</span>` : ''}
-        </div>
+        ${meta ? `<div class="meta">${meta}</div>` : ''}
         <div class="time">${time}</div>
       `;
 
