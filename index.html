@@ -25,20 +25,34 @@ fetch('./message1.html')
     const doc = parser.parseFromString(html, 'text/html');
 
     const messages = doc.querySelectorAll('div.pam');
-
     const chat = document.getElementById('chat');
 
     messages.forEach(msg => {
 
       const senderEl = msg.querySelector('h2');
-      const textEl = msg.querySelector('div._3-95._a6-p div div:nth-child(2)');
       const timeEl = msg.querySelector('div._3-94._a6-o');
+      const textBlocks = msg.querySelectorAll('div._3-95._a6-p div div');
 
       if (!senderEl || !timeEl) return;
 
       const sender = senderEl.innerText.trim();
-      const text = textEl ? textEl.innerText.trim() : '';
       const time = timeEl.innerText.trim();
+
+      let text = "";
+
+      textBlocks.forEach(t => {
+        const val = t.innerText.trim();
+
+        if (
+          !val ||
+          val.includes("Liked a message") ||
+          val.includes("edited")
+        ) return;
+
+        text += (text ? "\n" : "") + val;
+      });
+
+      if (!text) return;
 
       const bubble = document.createElement('div');
 
