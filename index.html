@@ -24,64 +24,86 @@ fetch('./message1.html')
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
-    const messages = doc.querySelectorAll('div.pam');
+    const nodes = Array.from(doc.querySelectorAll('div.pam'));
     const chat = document.getElementById('chat');
 
-    let lastMessageEl = null;
+    let lastRealMessage = null;
 
-    messages.forEach(msg => {
+    function isSystemLike(text) {
+      return /reacted|liked a message/i.test(text);
+    }
 
-      const sender = msg.querySelector('h2')?.innerText?.trim();
-      const time = msg.querySelector('div._3-94._a6-o')?.innerText?.trim();
+    function isEdited(text) {
+      return /\(edited\)/i.test(text);
+    }
+
+    nodes.forEach(node => {
+
+      const sender = node.querySelector('h2')?.innerText?.trim();
+      const time = node.querySelector('div._3-94._a6-o')?.innerText?.trim();
+      const textRaw = node.querySelector('div._a6-p')?.innerText?.trim() || '';
 
       if (!sender || !time) return;
 
-      // clone text block so we can safely remove junk
-      const textBlock = msg.querySelector('div._a6-p');
-      let text = '';
-
-      if (textBlock) {
-        const clone = textBlock.cloneNode(true);
-
-        // remove sender name if it leaks inside text
-        clone.querySelectorAll('h2').forEach(e => e.remove());
-
-        text = clone.innerText.trim();
-      }
-
-      const isEdited = text.includes('(edited)');
-      if (isEdited) {
-        text = text.replace('(edited)', '').trim();
-      }
-
-      const isLiked = text.toLowerCase().includes('liked a message');
-
-      // FIX 1: liked messages become separate UI element ONLY
-      if (isLiked) {
-        if (lastMessageEl) {
-          const like = document.createElement('div');
-          like.className = 'like-below';
-          like.innerText = '❤ liked';
-          lastMessageEl.appendChild(like);
+      // -------------------------
+      // 1. HANDLE "LIKED / REACTED" SYSTEM MESSAGES
+      // -------------------------
+      if (isSystemLike(textRaw)) {
+        if (lastRealMessage) {
+          const likeTag = document.createElement('div');
+          likeTag.className = 'like-below';
+          likeTag.innerText = '❤ liked';
+          lastRealMessage.appendChild(likeTag);
         }
-        return; // IMPORTANT: do not render a normal bubble
+        return; // NEVER render as bubble
       }
 
-      // build message bubble
+      // -------------------------
+      // 2. HANDLE EDITED MESSAGES
+      // -------------------------
+      let isEdit = isEdited(textRaw);
+      let cleanText = textRaw.replace('(edited)', '').trim();
+
+      // If this looks like a duplicate edit artifact, skip old versions
+      const alreadyRendered = lastRealMessage &&
+        lastRealMessage.dataset &&
+        lastRealMessage.dataset.fingerprint === cleanText;
+
+      if (alreadyRendered && isEdit) {
+        lastRealMessage.querySelector('.bubble').innerText = cleanText;
+        lastRealMessage.querySelector('.meta')?.remove();
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerText = 'edited';
+        lastRealMessage.appendChild(meta);
+
+        return;
+      }
+
+      // -------------------------
+      // 3. CREATE NORMAL MESSAGE
+      // -------------------------
       const bubble = document.createElement('div');
       bubble.className = sender === 'Rylen' ? 'message you' : 'message her';
 
+      bubble.dataset.fingerprint = cleanText;
+
       bubble.innerHTML = `
         <div class="name">${sender}</div>
-        <div class="bubble">${text}</div>
-        ${isEdited ? `<div class="meta">edited</div>` : ''}
+        <div class="bubble">${cleanText}</div>
         <div class="time">${time}</div>
       `;
 
-      chat.appendChild(bubble);
+      if (isEdit) {
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerText = 'edited';
+        bubble.appendChild(meta);
+      }
 
-      // track last real message
-      lastMessageEl = bubble;
+      chat.appendChild(bubble);
+      lastRealMessage = bubble;
 
     });
 
