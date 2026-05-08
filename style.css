@@ -66,12 +66,15 @@ body{
   color:gray;
   font-style:italic;
 }
+.liked{
+  color:#e1306c;
+  font-weight:600;
+}
 .time{
   font-size:11px;
   opacity:0.5;
   margin-top:2px;
 }
-
 .liked{
   color:#e1306c;
   font-weight:600;
