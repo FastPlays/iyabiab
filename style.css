@@ -55,11 +55,10 @@ body{
 }
 
 .meta{
-  font-size:12px;
-  margin-top:4px;
-  opacity:0.6;
   display:flex;
-  gap:8px;
+  align-items:center;
+  gap:6px;
+  margin-top:4px;
 }
 
 .edited{
@@ -68,8 +67,16 @@ body{
 }
 
 .liked{
-  color:#e1306c;
-  font-weight:600;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  background:#ff2d55;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  line-height:1;
 }
 .search-box{
   text-align:center;
