@@ -18,43 +18,56 @@
 
 <script>
 fetch('./message1.html')
-  .then(res => res.text())
+ .then(res => res.text())
   .then(html => {
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
     const messages = doc.querySelectorAll('div.pam');
+
     const chat = document.getElementById('chat');
 
     messages.forEach(msg => {
 
-      const senderEl = msg.querySelector('h2');
-      if (!senderEl) return;
+      const sender = msg.querySelector('h2')?.innerText?.trim();
+      const time = msg.querySelector('div._3-94._a6-o')?.innerText?.trim();
 
-      const sender = senderEl.innerText.trim();
+      if (!sender || !time) return;
 
-      const textEl = msg.querySelector('div._3-95._a6-p');
-      let text = textEl ? textEl.innerText.trim() : '';
+      const textBlock = msg.querySelector('div._a6-p');
+      let text = '';
+      let isLiked = false;
+      let isEdited = false;
 
-      const timeEl = msg.querySelector('div._3-94._a6-o');
-      const time = timeEl ? timeEl.innerText.trim() : '';
+      if (textBlock) {
+        text = textBlock.innerText.trim();
 
-      const isLiked = text.includes("Liked a message");
-      const isEdited = text.includes("(edited)");
+        if (text.toLowerCase().includes('liked a message')) {
+          isLiked = true;
+        }
 
-      let bubbleText = text
-        .replace("Liked a message", "❤️ liked a message")
-        .replace("(edited)", "✏️ edited");
+        if (text.toLowerCase().includes('(edited)')) {
+          isEdited = true;
+          text = text.replace('(edited)', '').trim();
+        }
+      }
 
       const bubble = document.createElement('div');
       bubble.className = sender === 'Rylen' ? 'message you' : 'message her';
 
+      let meta = '';
+
+      if (isEdited) meta += `<span class="edited">edited</span>`;
+      if (isLiked) meta += `<span class="liked">❤ liked</span>`;
+
       bubble.innerHTML = `
         <div class="name">${sender}</div>
-        <div class="bubble ${isLiked ? 'liked' : ''} ${isEdited ? 'edited' : ''}">
-          ${bubbleText}
-        </div>
+
+        ${text ? `<div class="bubble">${text}</div>` : ''}
+
+        ${meta ? `<div class="meta">${meta}</div>` : ''}
+
         <div class="time">${time}</div>
       `;
 
