@@ -1,30 +1,38 @@
 body{
   margin:0;
-  font-family:Arial;
-  background:#e9eaed;
+  background:#0f0f10;
+  color:white;
+  font-family:Arial, sans-serif;
 }
 
 .top{
-  text-align:center;
-  padding:20px;
-  background:white;
   position:sticky;
   top:0;
-  box-shadow:0 2px 10px rgba(0,0,0,0.1);
+  z-index:100;
+  background:#16181c;
+  padding:20px;
+  text-align:center;
+  border-bottom:1px solid #2a2d33;
+}
+
+.top h1{
+  margin:0;
+}
+
+.top p{
+  opacity:.7;
 }
 
 #chat{
-  max-width:700px;
+  max-width:900px;
   margin:auto;
   padding:20px;
-  height:80vh;
-  overflow-y:auto;
 }
 
 .message{
   display:flex;
   flex-direction:column;
-  margin:12px 0;
+  margin:14px 0;
 }
 
 .you{
@@ -37,37 +45,28 @@ body{
 
 .name{
   font-size:12px;
-  opacity:0.6;
-  margin-bottom:4px;
+  opacity:.6;
+  margin-bottom:5px;
 }
 
 .bubble{
+  padding:14px 18px;
+  border-radius:22px;
   max-width:70%;
-  padding:12px 15px;
-  border-radius:18px;
-  background:white;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  line-height:1.5;
+  word-wrap:break-word;
 }
 
 .you .bubble{
-  background:#0084ff;
-  color:white;
+  background:#3797f0;
 }
 
-.meta{
-  font-size:12px;
-  margin-top:4px;
-  opacity:0.6;
-  display:flex;
-  gap:8px;
+.her .bubble{
+  background:#26292f;
 }
 
-.edited{
-  color:gray;
-  font-style:italic;
-}
-
-.liked{
-  color:#e1306c;
-  font-weight:600;
+.time{
+  font-size:11px;
+  opacity:.5;
+  margin-top:5px;
 }
