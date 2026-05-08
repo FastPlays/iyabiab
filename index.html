@@ -95,8 +95,18 @@ fetch('./message1.html')
     setTimeout(() => {
       chat.scrollTop = chat.scrollHeight;
     }, 200);
-
   });
+  const searchInput = document.getElementById('search');
+
+searchInput.addEventListener('input', function () {
+  const value = this.value.toLowerCase();
+  const messages = document.querySelectorAll('.message');
+
+  messages.forEach(msg => {
+    const text = msg.innerText.toLowerCase();
+    msg.style.display = text.includes(value) ? 'flex' : 'none';
+  });
+});
 </script>
 
 </body>
