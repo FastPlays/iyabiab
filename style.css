@@ -84,3 +84,47 @@ body{
   border:1px solid #ccc;
   outline:none;
 }
+#loginScreen{
+  position:fixed;
+  inset:0;
+  background:#f2f2f2;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.login-box{
+  background:white;
+  padding:40px;
+  border-radius:25px;
+  text-align:center;
+  width:300px;
+  box-shadow:0 5px 20px rgba(0,0,0,0.15);
+}
+
+.login-box input{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  border-radius:15px;
+  border:1px solid #ccc;
+  box-sizing:border-box;
+}
+
+.login-box button{
+  margin-top:15px;
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:15px;
+  background:#0084ff;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+}
+
+#error{
+  color:red;
+  margin-top:10px;
+}
