@@ -242,3 +242,67 @@ body {
     display: none;
   }
 }
+.side-btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffffff, #f9fafb);
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+  white-space: nowrap;
+}
+
+.side-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.side-btn:active {
+  transform: scale(0.98);
+}
+
+.side-btn::before {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* First button */
+.side-btn.left {
+  background: linear-gradient(135deg, #fff1f2, #ffffff);
+  border-color: #fecdd3;
+}
+
+.side-btn.left::before {
+  content: "💌";
+}
+
+/* Second button */
+.side-btn.right {
+  background: linear-gradient(135deg, #fdf4ff, #ffffff);
+  border-color: #e9d5ff;
+}
+
+.side-btn.right::before {
+  content: "🌹";
+}
+
+/* Optional label cleanup if you remove emojis from HTML */
+.side-btn.left,
+.side-btn.right {
+  color: #111827;
+}
