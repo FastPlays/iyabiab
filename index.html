@@ -21,14 +21,14 @@
   
 <div class="top">
   
-  <a href="document1.pdf" target="_blank" class="side-btn left">
-    🌹
+  <a href="letter1.pdf" target="_blank" class="side-btn left">
+    💌
   </a>
 
   <h1>Khloe ❤️ Rylen</h1>
 
-  <a href="document2.pdf" target="_blank" class="side-btn right">
-    💌
+  <a href="letter2.pdf" target="_blank" class="side-btn right">
+    🌹
   </a>
 
   <p>Instagram Memories</p>
@@ -111,53 +111,31 @@ function cleanText(text = "") {
       }
     });
 
-function render(filter = "") {
-  chat.innerHTML = "";
+    function render(filter = "") {
+      chat.innerHTML = "";
 
-  const items = [];
+      map.forEach(({ sender, time, text, isEdited }) => {
 
-  map.forEach(({ sender, time, text, isEdited }) => {
+        if (filter && !text.toLowerCase().includes(filter.toLowerCase()) &&
+            !sender.toLowerCase().includes(filter.toLowerCase())) {
+          return;
+        }
 
-    if (
-      filter &&
-      !text.toLowerCase().includes(filter.toLowerCase()) &&
-      !sender.toLowerCase().includes(filter.toLowerCase())
-    ) return;
+        const bubble = document.createElement('div');
+        bubble.className = sender === 'Rylen' ? 'message you' : 'message her';
 
-    items.push({ sender, time, text, isEdited });
-  });
+        bubble.innerHTML = `
+          <div class="name">${sender}</div>
+          ${text ? `<div class="bubble">${text}</div>` : ''}
+          <div class="meta">
+            ${isEdited ? `<span class="edited">edited</span>` : ''}
+          </div>
+          <div class="time">${time}</div>
+        `;
 
-  // IMPORTANT: keep chronological order (oldest → newest)
-  items.sort((a, b) => new Date(a.time) - new Date(b.time));
-
-  items.forEach(({ sender, time, text, isEdited }) => {
-
-    const bubble = document.createElement("div");
-    bubble.className = sender === "Rylen" ? "message you" : "message her";
-
-    bubble.innerHTML = `
-      <div class="name">${sender}</div>
-      ${text ? `<div class="bubble">${text}</div>` : ""}
-      <div class="meta">
-        ${isEdited ? `<span class="edited">edited</span>` : ""}
-      </div>
-      <div class="time">${time}</div>
-    `;
-
-    chat.appendChild(bubble);
-  });
-
-  // CRITICAL: wait then jump to bottom (Instagram behavior)
-  setTimeout(() => {
-    chat.scrollTop = chat.scrollHeight;
-  }, 0);
-}
-
-  // Wait until the browser finishes rendering, then scroll to bottom
-  requestAnimationFrame(() => {
-    chat.scrollTop = chat.scrollHeight;
-  });
-}
+        chat.appendChild(bubble);
+      });
+    }
 
     render();
 
