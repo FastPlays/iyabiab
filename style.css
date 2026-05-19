@@ -7,7 +7,7 @@ body{
 .top {
   position: relative;
   text-align: center;
-  padding: 25px 16px;
+  padding: 20px 16px;
   background: white;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
