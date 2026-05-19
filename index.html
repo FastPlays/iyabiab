@@ -114,14 +114,23 @@ function cleanText(text = "") {
 function render(filter = "") {
   chat.innerHTML = "";
 
+  const items = [];
+
   map.forEach(({ sender, time, text, isEdited }) => {
+
     if (
       filter &&
       !text.toLowerCase().includes(filter.toLowerCase()) &&
       !sender.toLowerCase().includes(filter.toLowerCase())
-    ) {
-      return;
-    }
+    ) return;
+
+    items.push({ sender, time, text, isEdited });
+  });
+
+  // IMPORTANT: keep chronological order (oldest → newest)
+  items.sort((a, b) => new Date(a.time) - new Date(b.time));
+
+  items.forEach(({ sender, time, text, isEdited }) => {
 
     const bubble = document.createElement("div");
     bubble.className = sender === "Rylen" ? "message you" : "message her";
@@ -137,6 +146,12 @@ function render(filter = "") {
 
     chat.appendChild(bubble);
   });
+
+  // CRITICAL: wait then jump to bottom (Instagram behavior)
+  setTimeout(() => {
+    chat.scrollTop = chat.scrollHeight;
+  }, 0);
+}
 
   // Wait until the browser finishes rendering, then scroll to bottom
   requestAnimationFrame(() => {
