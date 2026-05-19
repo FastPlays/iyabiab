@@ -324,3 +324,7 @@ body {
     max-width: 92%;
   }
 }
+#chat {
+  display: flex;
+  flex-direction: column;
+}
