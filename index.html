@@ -111,32 +111,38 @@ function cleanText(text = "") {
       }
     });
 
-    function render(filter = "") {
-      chat.innerHTML = "";
+function render(filter = "") {
+  chat.innerHTML = "";
 
-      map.forEach(({ sender, time, text, isEdited }) => {
-
-        if (filter && !text.toLowerCase().includes(filter.toLowerCase()) &&
-            !sender.toLowerCase().includes(filter.toLowerCase())) {
-          return;
-        }
-
-        const bubble = document.createElement('div');
-        bubble.className = sender === 'Rylen' ? 'message you' : 'message her';
-
-        bubble.innerHTML = `
-          <div class="name">${sender}</div>
-          ${text ? `<div class="bubble">${text}</div>` : ''}
-          <div class="meta">
-            ${isEdited ? `<span class="edited">edited</span>` : ''}
-          </div>
-          <div class="time">${time}</div>
-        `;
-
-        chat.appendChild(bubble);
-      });
-      chat.scrollTop = chat.scrollHeight;
+  map.forEach(({ sender, time, text, isEdited }) => {
+    if (
+      filter &&
+      !text.toLowerCase().includes(filter.toLowerCase()) &&
+      !sender.toLowerCase().includes(filter.toLowerCase())
+    ) {
+      return;
     }
+
+    const bubble = document.createElement("div");
+    bubble.className = sender === "Rylen" ? "message you" : "message her";
+
+    bubble.innerHTML = `
+      <div class="name">${sender}</div>
+      ${text ? `<div class="bubble">${text}</div>` : ""}
+      <div class="meta">
+        ${isEdited ? `<span class="edited">edited</span>` : ""}
+      </div>
+      <div class="time">${time}</div>
+    `;
+
+    chat.appendChild(bubble);
+  });
+
+  // Wait until the browser finishes rendering, then scroll to bottom
+  requestAnimationFrame(() => {
+    chat.scrollTop = chat.scrollHeight;
+  });
+}
 
     render();
 
