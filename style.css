@@ -252,3 +252,75 @@ body {
     font-size: 14px;
   }
 }
+/* Full-screen app layout */
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #f2f2f2;
+}
+
+/* Header stays fixed */
+.top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+/* Search bar stays under header */
+.search-box {
+  position: fixed;
+  top: 96px; /* adjust if your header height changes */
+  left: 0;
+  right: 0;
+  z-index: 90;
+  background: #f2f2f2;
+  padding: 10px 12px;
+}
+
+/* Scrollable chat area */
+#chat {
+  position: fixed;
+  top: 160px; /* header + search bar height */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px;
+  max-width: 800px;
+  margin: 0 auto;
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar on mobile for cleaner look */
+#chat::-webkit-scrollbar {
+  width: 6px;
+}
+
+#chat::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 999px;
+}
+
+/* Mobile spacing */
+@media (max-width: 768px) {
+  .search-box {
+    top: 88px;
+  }
+
+  #chat {
+    top: 148px;
+    padding: 10px;
+  }
+
+  .bubble {
+    max-width: 92%;
+  }
+}
