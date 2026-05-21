@@ -37,35 +37,23 @@
     <!-- HEADER -->
     <div class="top">
 
-      <a
-        href="document1.pdf"
-        target="_blank"
-        class="side-btn left"
-      >
+      <a href="document1.pdf" target="_blank" class="side-btn left">
         💌
       </a>
 
       <h1>Khloe ❤️ Rylen</h1>
 
-      <a
-        href="document2.pdf"
-        target="_blank"
-        class="side-btn right"
-      >
+      <a href="document2.pdf" target="_blank" class="side-btn right">
         🌹
       </a>
+
+      <p>Instagram Memories</p>
 
     </div>
 
     <!-- SEARCH -->
     <div class="search-box">
-
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Search messages..."
-      >
-
+      <input id="searchInput" type="text" placeholder="Search messages...">
     </div>
 
     <!-- CHAT -->
@@ -73,346 +61,168 @@
 
   </div>
 
-<script>
+  <script>
 
-const chat = document.getElementById("chat");
+    const chat = document.getElementById('chat');
 
-let userHasScrolledUp = false;
+    fetch('message1.html')
+      .then(res => res.text())
+      .then(html => {
 
-// DETECT IF USER SCROLLED UP
-chat.addEventListener("scroll", () => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
 
-  const nearBottom =
-    chat.scrollHeight -
-    chat.scrollTop -
-    chat.clientHeight < 100;
+        const messages = doc.querySelectorAll('div.pam');
 
-  userHasScrolledUp = !nearBottom;
+        const map = new Map();
 
-});
+        function cleanText(text = "") {
 
-// LOAD INSTAGRAM HTML
-fetch("message1.html")
+          const hasHeartTag =
+            text.includes("❤️Khloe") ||
+            text.includes("❤️Rylen") ||
+            text.includes("❤Khloe") ||
+            text.includes("❤Rylen");
 
-  .then(res => res.text())
+          text = text
+            .replace(/❤️Khloe/g, "")
+            .replace(/❤️Rylen/g, "")
+            .replace(/❤Khloe/g, "")
+            .replace(/❤Rylen/g, "")
+            .replace("(edited)", "")
+            .replace(/\s+/g, " ")
+            .trim();
 
-  .then(html => {
+          const reelMatch = text.match(
+            /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
+          );
 
-    const doc =
-      new DOMParser()
-      .parseFromString(html, "text/html");
-
-    // GET ALL MESSAGES
-    let messages =
-      Array.from(
-        doc.querySelectorAll("div.pam")
-      );
-
-    // ENSURE CORRECT ORDER
-    messages.reverse();
-
-    const map = new Map();
-
-    // CLEAN MESSAGE TEXT
-    function cleanText(text = "") {
-
-      const hasHeartTag =
-        text.includes("❤️Khloe") ||
-        text.includes("❤️Rylen") ||
-        text.includes("❤Khloe") ||
-        text.includes("❤Rylen");
-
-      text = text
-
-        .replace(/❤️Khloe/g, "")
-        .replace(/❤️Rylen/g, "")
-        .replace(/❤Khloe/g, "")
-        .replace(/❤Rylen/g, "")
-
-        .replace("(edited)", "")
-
-        .replace(/\s+/g, " ")
-
-        .trim();
-
-      // REELS
-      const reelMatch =
-        text.match(
-          /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
-        );
-
-      return {
-
-        text:
-          reelMatch
-            ? reelMatch[0]
-            : text,
-
-        liked:
-          hasHeartTag
-
-      };
-
-    }
-
-    // REACTION DETECTION
-    function isReaction(text = "") {
-
-      const t =
-        text.toLowerCase();
-
-      return (
-        t.includes("liked a message") ||
-        t.includes("reacted")
-      );
-
-    }
-
-    // PROCESS MESSAGES
-    messages.forEach(msg => {
-
-      const sender =
-        msg.querySelector("h2")
-          ?.innerText
-          ?.trim();
-
-      const time =
-        msg.querySelector("div._3-94._a6-o")
-          ?.innerText
-          ?.trim();
-
-      const textBlock =
-        msg.querySelector("div._a6-p");
-
-      if (!sender || !time) return;
-
-      let rawText =
-        textBlock
-          ? textBlock.innerText.trim()
-          : "";
-
-      // HANDLE REACTIONS
-      if (isReaction(rawText)) {
-
-        for (
-          let i = map.size - 1;
-          i >= 0;
-          i--
-        ) {
-
-          const key =
-            Array.from(map.keys())[i];
-
-          const previous =
-            map.get(key);
-
-          if (
-            previous &&
-            !previous.liked
-          ) {
-
-            previous.liked = true;
-            break;
-
-          }
-
+          return {
+            text: reelMatch ? reelMatch[0] : text,
+            liked: hasHeartTag
+          };
         }
 
-        return;
-      }
+        function getReaction(text = "") {
+          const t = text.toLowerCase();
+          if (t.includes("liked a message") || t.includes("reacted ❤️")) {
+            return true;
+          }
+          return false;
+        }
 
-      const cleaned =
-        cleanText(rawText);
+        messages.forEach(msg => {
 
-      // PREVENT EDITED DUPLICATES
-      const key =
-        sender + "|" + time;
+          const sender =
+            msg.querySelector('h2')?.innerText?.trim();
 
-      map.set(key, {
+          const time =
+            msg.querySelector('div._3-94._a6-o')?.innerText?.trim();
 
-        sender,
-        time,
+          const textBlock =
+            msg.querySelector('div._a6-p');
 
-        text:
-          cleaned.text,
+          if (!sender || !time) return;
 
-        liked:
-          cleaned.liked,
+          let rawText =
+            textBlock ? textBlock.innerText.trim() : "";
 
-        isEdited:
-          rawText.includes("(edited)")
+          // REACTION HANDLING
+          if (getReaction(rawText)) {
 
-      });
+            const lastKey =
+              Array.from(map.keys()).pop();
 
-    });
+            if (lastKey) map.get(lastKey).liked = true;
 
-    // AUTO SCROLL
-    function scrollToBottom(force = false) {
+            return;
+          }
 
-      if (
-        force ||
-        !userHasScrolledUp
-      ) {
+          const isEdited = rawText.includes("(edited)");
+          const cleaned = cleanText(rawText);
 
-        requestAnimationFrame(() => {
+          const key = sender + "|" + time;
 
-          setTimeout(() => {
-
-            chat.scrollTop =
-              chat.scrollHeight;
-
-          }, 0);
+          map.set(key, {
+            sender,
+            time,
+            text: cleaned.text,
+            isEdited,
+            liked: cleaned.liked
+          });
 
         });
 
+        function render(filter = "") {
+
+          chat.innerHTML = "";
+
+          const fragment = document.createDocumentFragment();
+
+          map.forEach(({ sender, time, text, isEdited, liked }) => {
+
+            const sText = (text || "").toLowerCase();
+            const sSender = (sender || "").toLowerCase();
+
+            if (
+              filter &&
+              !sText.includes(filter.toLowerCase()) &&
+              !sSender.includes(filter.toLowerCase())
+            ) return;
+
+            const div = document.createElement("div");
+
+            div.className =
+              sender === "Rylen" ? "message you" : "message her";
+
+            div.innerHTML = `
+              <div class="name">${sender}</div>
+
+              ${text ? `<div class="bubble">${text}</div>` : ""}
+
+              ${liked ? `<div class="liked-tag">❤️ liked</div>` : ""}
+
+              <div class="meta">
+                ${isEdited ? `<span class="edited">edited</span>` : ""}
+              </div>
+
+              <div class="time">${time}</div>
+            `;
+
+            fragment.appendChild(div);
+
+          });
+
+          chat.appendChild(fragment);
+
+          requestAnimationFrame(() => {
+            chat.scrollTop = chat.scrollHeight;
+          });
+
+        }
+
+        render();
+
+        document.getElementById("searchInput")
+          .addEventListener("input", e => render(e.target.value));
+
+      });
+
+    function checkPassword() {
+
+      const pw = document.getElementById("passwordInput").value;
+
+      if (pw === "iloveyou") {
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("siteContent").style.display = "block";
+      } else {
+        document.getElementById("error").innerText = "Wrong password";
       }
 
     }
 
-    // RENDER CHAT
-    function render(filter = "") {
-
-      chat.innerHTML = "";
-
-      const fragment =
-        document.createDocumentFragment();
-
-      map.forEach(({
-
-        sender,
-        time,
-        text,
-        liked,
-        isEdited
-
-      }) => {
-
-        const safeText =
-          (text || "")
-          .toLowerCase();
-
-        const safeSender =
-          (sender || "")
-          .toLowerCase();
-
-        if (
-
-          filter &&
-
-          !safeText.includes(
-            filter.toLowerCase()
-          ) &&
-
-          !safeSender.includes(
-            filter.toLowerCase()
-          )
-
-        ) return;
-
-        const div =
-          document.createElement("div");
-
-        div.className =
-
-          sender === "Rylen"
-
-            ? "message you"
-
-            : "message her";
-
-        div.innerHTML = `
-
-          <div class="name">
-            ${sender}
-          </div>
-
-          ${text
-
-            ? `<div class="bubble">${text}</div>`
-
-            : ""
-
-          }
-
-          ${liked
-
-            ? `<div class="liked-tag">❤️ liked</div>`
-
-            : ""
-
-          }
-
-          <div class="meta">
-
-            ${isEdited
-
-              ? `<span class="edited">edited</span>`
-
-              : ""
-
-            }
-
-          </div>
-
-          <div class="time">
-            ${time}
-          </div>
-
-        `;
-
-        fragment.appendChild(div);
-
-      });
-
-      chat.appendChild(fragment);
-
-      // START AT BOTTOM
-      scrollToBottom(true);
-
-    }
-
-    // INITIAL RENDER
-    render();
-
-    // SEARCH
-    document
-      .getElementById("searchInput")
-      .addEventListener(
-        "input",
-        e => render(e.target.value)
-      );
-
-  });
-
-// PASSWORD SYSTEM
-function checkPassword() {
-
-  const pw =
-    document.getElementById(
-      "passwordInput"
-    ).value;
-
-  if (pw === "iloveyou") {
-
-    document.getElementById(
-      "loginScreen"
-    ).style.display = "none";
-
-    document.getElementById(
-      "siteContent"
-    ).style.display = "block";
-
-  } else {
-
-    document.getElementById(
-      "error"
-    ).innerText = "Wrong password";
-
-  }
-
-}
-
-</script>
+  </script>
 
 </body>
+
 </html>
