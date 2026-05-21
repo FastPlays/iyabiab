@@ -82,20 +82,25 @@ body {
 }
 
 /* CHAT */
+
 #chat {
   position: fixed;
   top: 175px;
   left: 0;
   right: 0;
   bottom: 0;
+
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+
   padding: 12px;
   max-width: 800px;
   margin: 0 auto;
 
   display: flex;
   flex-direction: column;
+
+  scroll-behavior: smooth;
 }
 
 /* MESSAGES */
