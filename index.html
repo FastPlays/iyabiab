@@ -10,9 +10,10 @@
 
 <body>
 
-  <!-- LOGIN SCREEN -->
+  <!-- LOGIN -->
   <div id="loginScreen">
     <div class="login-box">
+
       <h2>K&R Memories</h2>
 
       <input
@@ -26,18 +27,19 @@
       </button>
 
       <p id="error"></p>
+
     </div>
   </div>
 
   <!-- SITE -->
   <div id="siteContent" style="display:none;">
 
-    <!-- TOP BAR -->
+    <!-- HEADER -->
     <div class="top">
 
       <a
-        href="document1.pdf"
-        target="_blank"
+        href="letter1.pdf"
+        target="_self"
         class="side-btn left"
       >
         💌
@@ -46,8 +48,8 @@
       <h1>Khloe ❤️ Rylen</h1>
 
       <a
-        href="document2.pdf"
-        target="_blank"
+        href="letter2.pdf"
+        target="_self"
         class="side-btn right"
       >
         🌹
@@ -59,11 +61,13 @@
 
     <!-- SEARCH -->
     <div class="search-box">
+
       <input
         id="searchInput"
         type="text"
         placeholder="Search messages..."
       >
+
     </div>
 
     <!-- CHAT -->
@@ -71,7 +75,7 @@
 
   </div>
 
-  <!-- CHAT SCRIPT -->
+  <!-- SCRIPT -->
   <script>
 
     const chat = document.getElementById('chat');
@@ -87,7 +91,7 @@
 
         const map = new Map();
 
-        // CLEAN MESSAGE TEXT
+        // CLEAN TEXT
         function cleanText(text = "") {
 
           text = text
@@ -97,7 +101,6 @@
             .replace(/\s+/g, " ")
             .trim();
 
-          // REEL LINKS ONLY
           const reelMatch = text.match(
             /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
           );
@@ -109,18 +112,22 @@
           return text;
         }
 
-        // REMOVE SYSTEM MESSAGES
-        function isSystemMessage(text = "") {
+        // REACTIONS
+        function getReaction(text = "") {
 
           const t = text.toLowerCase();
 
-          return (
+          if (
             t.includes("liked a message") ||
-            t.includes("reacted")
-          );
+            t.includes("reacted ❤️")
+          ) {
+            return "❤️ liked";
+          }
+
+          return null;
         }
 
-        // LOOP THROUGH INSTAGRAM MESSAGES
+        // PARSE MESSAGES
         messages.forEach(msg => {
 
           const sender =
@@ -143,35 +150,51 @@
               ? textBlock.innerText.trim()
               : "";
 
-          // REMOVE SYSTEM TEXT
-          if (isSystemMessage(rawText)) return;
+          const reaction = getReaction(rawText);
+
+          // ADD LIKE TO PREVIOUS MESSAGE
+          if (reaction) {
+
+            const lastKey =
+              Array.from(map.keys()).pop();
+
+            if (lastKey) {
+              map.get(lastKey).liked = true;
+            }
+
+            return;
+          }
 
           const isEdited =
             rawText.includes("(edited)");
 
-          const text = cleanText(rawText);
+          const text =
+            cleanText(rawText);
 
-          // BETTER UNIQUE KEY
           const key =
             sender + "|" + time + "|" + rawText;
 
-          const existing = map.get(key);
+          const existing =
+            map.get(key);
 
           const data = {
             sender,
             time,
             text,
-            isEdited
+            isEdited,
+            liked: false
           };
 
-          // KEEP EDITED VERSION ONLY
           if (!existing) {
 
             map.set(key, data);
 
           } else {
 
-            if (isEdited && !existing.isEdited) {
+            if (
+              isEdited &&
+              !existing.isEdited
+            ) {
               map.set(key, data);
             }
 
@@ -179,7 +202,7 @@
 
         });
 
-        // RENDER CHAT
+        // RENDER
         function render(filter = "") {
 
           chat.innerHTML = "";
@@ -188,7 +211,8 @@
             sender,
             time,
             text,
-            isEdited
+            isEdited,
+            liked
           }) => {
 
             const safeText =
@@ -223,6 +247,11 @@
                 : ''
               }
 
+              ${liked
+                ? `<div class="liked-tag">❤️ liked</div>`
+                : ''
+              }
+
               <div class="meta">
                 ${isEdited
                   ? `<span class="edited">edited</span>`
@@ -239,7 +268,7 @@
 
           });
 
-          // AUTO SCROLL TO BOTTOM
+          // SCROLL TO BOTTOM
           chat.scrollTop = chat.scrollHeight;
         }
 
@@ -270,8 +299,6 @@
 
         document.getElementById("siteContent")
           .style.display = "block";
-
-        document.body.style.overflow = "hidden";
 
       } else {
 
