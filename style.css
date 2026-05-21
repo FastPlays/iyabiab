@@ -4,7 +4,7 @@ body {
   font-family: Arial;
   background: #e9eaed;
   height: 100vh;
-  overflow: hidden;
+  overflow: hidden; /* IMPORTANT: prevents page scroll conflicts */
 }
 
 /* =========================
