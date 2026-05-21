@@ -94,23 +94,40 @@
         // CLEAN TEXT
         function cleanText(text = "") {
 
-          text = text
-            .replace("❤Khloe", "")
-            .replace("❤Rylen", "")
-            .replace("(edited)", "")
-            .replace(/\s+/g, " ")
-            .trim();
+  // DETECT LIKE TAGS
+  const hasHeartTag =
+    text.includes("❤️Khloe") ||
+    text.includes("❤️Rylen") ||
+    text.includes("❤Khloe") ||
+    text.includes("❤Rylen");
 
-          const reelMatch = text.match(
-            /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
-          );
+  // REMOVE HEART TAGS
+  text = text
+    .replace(/❤️Khloe/g, "")
+    .replace(/❤️Rylen/g, "")
+    .replace(/❤Khloe/g, "")
+    .replace(/❤Rylen/g, "")
+    .replace("(edited)", "")
+    .replace(/\s+/g, " ")
+    .trim();
 
-          if (reelMatch) {
-            return reelMatch[0];
-          }
+  // REEL LINKS ONLY
+  const reelMatch = text.match(
+    /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
+  );
 
-          return text;
-        }
+  if (reelMatch) {
+    return {
+      text: reelMatch[0],
+      liked: hasHeartTag
+    };
+  }
+
+  return {
+    text,
+    liked: hasHeartTag
+  };
+}
 
         // REACTIONS
         function getReaction(text = "") {
