@@ -28,15 +28,10 @@
   <div id="siteContent" style="display:none;">
 
     <div class="top">
-
       <a href="document1.pdf" target="_blank" class="side-btn left">💌</a>
-
       <h1>Khloe ❤️ Rylen</h1>
-
       <a href="document2.pdf" target="_blank" class="side-btn right">🌹</a>
-
       <p>Instagram Memories</p>
-
     </div>
 
     <div class="search-box">
@@ -51,16 +46,22 @@
 
 const chat = document.getElementById("chat");
 
+let userHasScrolledUp = false;
+
+chat.addEventListener("scroll", () => {
+  const nearBottom =
+    chat.scrollHeight - chat.scrollTop - chat.clientHeight < 80;
+
+  userHasScrolledUp = !nearBottom;
+});
+
 fetch("message1.html")
   .then(res => res.text())
   .then(html => {
 
     const doc = new DOMParser().parseFromString(html, "text/html");
 
-    let messages = Array.from(doc.querySelectorAll("div.pam"));
-
-    // OPTIONAL FIX: ensure correct order (old → new)
-    messages = messages.reverse();
+    let messages = Array.from(doc.querySelectorAll("div.pam")).reverse();
 
     const map = new Map();
 
@@ -106,14 +107,14 @@ fetch("message1.html")
 
       let rawText = textBlock ? textBlock.innerText.trim() : "";
 
-      // HANDLE LIKE REACTIONS (FIXED: correct targeting)
+      // LIKE HANDLING (fixed targeting)
       if (isReaction(rawText)) {
 
         for (let i = map.size - 1; i >= 0; i--) {
           const key = Array.from(map.keys())[i];
-          const msg = map.get(key);
-          if (msg && !msg.liked) {
-            msg.liked = true;
+          const m = map.get(key);
+          if (m && !m.liked) {
+            m.liked = true;
             break;
           }
         }
@@ -125,20 +126,23 @@ fetch("message1.html")
 
       const key = sender + "|" + time;
 
-      const existing = map.get(key);
-
-      const data = {
+      map.set(key, {
         sender,
         time,
         text: cleaned.text,
         liked: cleaned.liked,
         isEdited: rawText.includes("(edited)")
-      };
-
-      // KEEP ONLY NEWEST EDITED VERSION
-      map.set(key, data);
+      });
 
     });
+
+    function scrollToBottom(force = false) {
+      if (force || !userHasScrolledUp) {
+        requestAnimationFrame(() => {
+          chat.scrollTop = chat.scrollHeight;
+        });
+      }
+    }
 
     function render(filter = "") {
 
@@ -182,10 +186,7 @@ fetch("message1.html")
 
       chat.appendChild(fragment);
 
-      // INSTAGRAM STYLE SCROLL (FIXED)
-      requestAnimationFrame(() => {
-        chat.scrollTop = chat.scrollHeight;
-      });
+      scrollToBottom(true);
     }
 
     render();
