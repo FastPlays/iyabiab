@@ -70,9 +70,9 @@ body{
   color:#e1306c;
   font-weight:600;
 }
-.search-box{
-  text-align:center;
-  margin:20px;
+.search-box {
+  position: fixed;
+  top: 125px;
 }
 
 .search-box input{
@@ -287,7 +287,7 @@ body {
 /* Scrollable chat area */
 #chat {
   position: fixed;
-  top: 160px; /* header + search bar height */
+  top: 190px; /* header + search bar height */
   left: 0;
   right: 0;
   bottom: 0;
@@ -312,11 +312,11 @@ body {
 /* Mobile spacing */
 @media (max-width: 768px) {
   .search-box {
-    top: 88px;
+    top: 115px;
   }
 
   #chat {
-    top: 148px;
+    top: 180px;
     padding: 10px;
   }
 
