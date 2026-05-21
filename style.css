@@ -1,162 +1,9 @@
-html,
+
+/* BASE */
 body {
-  height: 100%;
   margin: 0;
-  overflow: hidden;
-  background: #e9eaed;
   font-family: Arial;
-}
-
-/* HEADER */
-.top {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: white;
-  padding: 20px 16px;
-  text-align: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-
-.top h1 {
-  margin: 0;
-  font-size: 26px;
-}
-
-.top p {
-  margin-top: 6px;
-  font-size: 14px;
-  opacity: 0.6;
-}
-
-/* PDF BUTTONS */
-.side-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  text-decoration: none;
-  background: white;
-  padding: 10px 12px;
-  border-radius: 50px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-  font-size: 16px;
-  transition: 0.2s ease;
-}
-
-.side-btn:hover {
-  transform: translateY(-50%) scale(1.08);
-}
-
-.side-btn.left {
-  left: 12px;
-}
-
-.side-btn.right {
-  right: 12px;
-}
-
-/* SEARCH */
-.search-box {
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
-  z-index: 90;
   background: #e9eaed;
-  padding: 10px 12px;
-}
-
-.search-box input {
-  width: 100%;
-  max-width: 800px;
-  display: block;
-  margin: auto;
-  padding: 12px 16px;
-  border-radius: 20px;
-  border: 1px solid #ccc;
-  outline: none;
-  font-size: 16px;
-  box-sizing: border-box;
-}
-
-/* CHAT */
-
-#chat {
-  position: fixed;
-  top: 175px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-
-  padding: 12px;
-  max-width: 800px;
-  margin: 0 auto;
-
-  display: flex;
-  flex-direction: column;
-
-  scroll-behavior: smooth;
-}
-
-/* MESSAGES */
-.message {
-  display: flex;
-  flex-direction: column;
-  margin: 10px 0;
-}
-
-.you {
-  align-items: flex-end;
-}
-
-.her {
-  align-items: flex-start;
-}
-
-.name {
-  font-size: 11px;
-  opacity: 0.6;
-  margin-bottom: 4px;
-}
-
-.bubble {
-  max-width: 85%;
-  padding: 12px 14px;
-  border-radius: 18px;
-  line-height: 1.45;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  background: #F88379;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.you .bubble {
-  background: #8B0000;
-  color: white;
-}
-
-.meta,
-.time {
-  font-size: 11px;
-  opacity: 0.6;
-  margin-top: 4px;
-}
-
-.edited {
-  font-style: italic;
-}
-
-/* LIKED */
-.liked-tag {
-  margin-top: 4px;
-  font-size: 12px;
-  color: #ff4f87;
-  font-weight: 600;
 }
 
 /* LOGIN */
@@ -176,61 +23,106 @@ body {
   border-radius: 25px;
   text-align: center;
   width: 300px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
 }
 
-.login-box input,
-.login-box button {
+/* HEADER */
+.top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  text-align: center;
+  padding: 20px;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* BUTTONS */
+.side-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  padding: 10px 12px;
+  border-radius: 50px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+}
+
+.side-btn.left { left: 12px; }
+.side-btn.right { right: 12px; }
+
+/* SEARCH */
+.search-box {
+  position: fixed;
+  top: 110px;
+  left: 0;
+  right: 0;
+  padding: 10px;
+  background: #e9eaed;
+  z-index: 90;
+}
+
+.search-box input {
   width: 100%;
+  max-width: 700px;
+  margin: auto;
+  display: block;
   padding: 12px;
-  margin-top: 15px;
-  border-radius: 15px;
-  box-sizing: border-box;
-  font-size: 16px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
 }
 
-.login-box button {
-  border: none;
+/* CHAT (INSTAGRAM STYLE FIX) */
+#chat {
+  position: fixed;
+  top: 175px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  max-width: 800px;
+  margin: auto;
+
+  display: flex;
+  flex-direction: column-reverse; /* IMPORTANT FIX */
+
+  overflow-y: auto;
+  padding: 12px;
+}
+
+/* MESSAGE */
+.message {
+  display: flex;
+  flex-direction: column;
+  margin: 10px 0;
+}
+
+.you { align-items: flex-end; }
+.her { align-items: flex-start; }
+
+.bubble {
+  max-width: 80%;
+  padding: 12px;
+  border-radius: 18px;
   background: #F88379;
+}
+
+.you .bubble {
+  background: #8B0000;
   color: white;
-  cursor: pointer;
 }
 
-#error {
-  color: red;
-  margin-top: 10px;
+/* META */
+.name, .time, .meta {
+  font-size: 11px;
+  opacity: 0.6;
 }
 
-/* MOBILE */
-@media (max-width: 768px) {
-
-  .top h1 {
-    font-size: 22px;
-  }
-
-  .search-box {
-    top: 100px;
-  }
-
-  #chat {
-    top: 165px;
-    padding: 10px;
-  }
-
-  .bubble {
-    max-width: 92%;
-    font-size: 15px;
-  }
-
-  .side-btn {
-    padding: 8px 10px;
-    font-size: 14px;
-  }
-
-  .login-box {
-    width: calc(100% - 32px);
-    max-width: 340px;
-    padding: 28px 24px;
-  }
-
+/* LIKED */
+.liked-tag {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #ff4f87;
+  font-weight: 600;
 }
