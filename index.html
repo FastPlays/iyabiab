@@ -35,29 +35,29 @@
   <div id="siteContent" style="display:none;">
 
     <!-- HEADER -->
-<div class="top">
+    <div class="top">
 
-  <a
-    href="document1.pdf"
-    target="_blank"
-    class="side-btn left"
-  >
-    💌
-  </a>
+      <a
+        href="document1.pdf"
+        target="_blank"
+        class="side-btn left"
+      >
+        💌
+      </a>
 
-  <h1>Khloe ❤️ Rylen</h1>
+      <h1>Khloe ❤️ Rylen</h1>
 
-  <a
-    href="document2.pdf"
-    target="_blank"
-    class="side-btn right"
-  >
-    🌹
-  </a>
+      <a
+        href="document2.pdf"
+        target="_blank"
+        class="side-btn right"
+      >
+        🌹
+      </a>
 
-  <p>Instagram Memories</p>
+      <p>Instagram Memories</p>
 
-</div>
+    </div>
 
     <!-- SEARCH -->
     <div class="search-box">
@@ -164,7 +164,8 @@
               ? textBlock.innerText.trim()
               : "";
 
-          const reaction = getReaction(rawText);
+          const reaction =
+            getReaction(rawText);
 
           // ADD LIKE TO PREVIOUS MESSAGE
           if (reaction) {
@@ -188,8 +189,11 @@
           const text =
             cleaned.text;
 
+          // IMPORTANT FIX:
+          // USE ONLY SENDER + TIME
+          // SO EDITED MESSAGE REPLACES OLD ONE
           const key =
-            sender + "|" + time + "|" + rawText;
+            sender + "|" + time;
 
           const existing =
             map.get(key);
@@ -202,16 +206,14 @@
             liked: cleaned.liked
           };
 
+          // KEEP NEWEST EDITED VERSION ONLY
           if (!existing) {
 
             map.set(key, data);
 
           } else {
 
-            if (
-              isEdited &&
-              !existing.isEdited
-            ) {
+            if (isEdited) {
               map.set(key, data);
             }
 
