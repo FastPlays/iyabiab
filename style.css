@@ -4,7 +4,7 @@ body {
   margin: 0;
   overflow: hidden;
   background: #e9eaed;
-  font-family: Arial;
+  font-family: Arial, sans-serif;
 }
 
 /* HEADER */
@@ -13,11 +13,17 @@ body {
   top: 0;
   left: 0;
   right: 0;
+
   z-index: 100;
+
   background: white;
+
   padding: 20px 16px;
+
   text-align: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+
+  box-shadow:
+    0 2px 10px rgba(0,0,0,0.08);
 }
 
 .top h1 {
@@ -34,19 +40,30 @@ body {
 /* PDF BUTTONS */
 .side-btn {
   position: absolute;
+
   top: 50%;
   transform: translateY(-50%);
+
   text-decoration: none;
+
   background: white;
+
   padding: 10px 12px;
+
   border-radius: 50px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+
+  box-shadow:
+    0 3px 10px rgba(0,0,0,0.15);
+
   font-size: 16px;
+
   transition: 0.2s ease;
 }
 
 .side-btn:hover {
-  transform: translateY(-50%) scale(1.08);
+  transform:
+    translateY(-50%)
+    scale(1.08);
 }
 
 .side-btn.left {
@@ -60,48 +77,68 @@ body {
 /* SEARCH */
 .search-box {
   position: fixed;
+
   top: 110px;
   left: 0;
   right: 0;
+
   z-index: 90;
+
   background: #e9eaed;
+
   padding: 10px 12px;
 }
 
 .search-box input {
   width: 100%;
   max-width: 800px;
+
   display: block;
   margin: auto;
+
   padding: 12px 16px;
+
   border-radius: 20px;
+
   border: 1px solid #ccc;
+
   outline: none;
+
   font-size: 16px;
+
   box-sizing: border-box;
 }
 
 /* CHAT */
 #chat {
   position: fixed;
+
   top: 175px;
   left: 0;
   right: 0;
   bottom: 0;
+
   overflow-y: auto;
+
   -webkit-overflow-scrolling: touch;
+
   padding: 12px;
+
   max-width: 800px;
+
   margin: 0 auto;
 
   display: flex;
   flex-direction: column;
+
+  scroll-behavior: smooth;
 }
 
-/* MESSAGES */
+/* MESSAGE */
 .message {
   display: flex;
   flex-direction: column;
+
   margin: 10px 0;
 }
 
@@ -115,19 +152,28 @@ body {
 
 .name {
   font-size: 11px;
+
   opacity: 0.6;
+
   margin-bottom: 4px;
 }
 
 .bubble {
   max-width: 85%;
+
   padding: 12px 14px;
+
   border-radius: 18px;
+
   line-height: 1.45;
+
   word-wrap: break-word;
   overflow-wrap: break-word;
+
   background: #F88379;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.1);
 }
 
 .you .bubble {
@@ -146,48 +192,60 @@ body {
   font-style: italic;
 }
 
-/* LIKED */
-.liked-tag {
-  margin-top: 4px;
-  font-size: 12px;
-  color: #ff4f87;
-  font-weight: 600;
-}
-
 /* LOGIN */
 #loginScreen {
   position: fixed;
+
   inset: 0;
+
   background: #f2f2f2;
+
   display: flex;
+
   justify-content: center;
   align-items: center;
+
   z-index: 9999;
 }
 
 .login-box {
   background: white;
+
   padding: 40px;
+
   border-radius: 25px;
+
   text-align: center;
+
   width: 300px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+
+  box-shadow:
+    0 5px 20px rgba(0,0,0,0.15);
 }
 
 .login-box input,
 .login-box button {
+
   width: 100%;
+
   padding: 12px;
+
   margin-top: 15px;
+
   border-radius: 15px;
+
   box-sizing: border-box;
+
   font-size: 16px;
 }
 
 .login-box button {
   border: none;
+
   background: #F88379;
+
   color: white;
+
   cursor: pointer;
 }
 
