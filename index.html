@@ -16,15 +16,9 @@
 
       <h2>K&R Memories</h2>
 
-      <input
-        type="password"
-        id="passwordInput"
-        placeholder="Enter password"
-      >
+      <input type="password" id="passwordInput" placeholder="Enter password">
 
-      <button onclick="checkPassword()">
-        Enter
-      </button>
+      <button onclick="checkPassword()">Enter</button>
 
       <p id="error"></p>
 
@@ -37,15 +31,11 @@
     <!-- HEADER -->
     <div class="top">
 
-      <a href="document1.pdf" target="_blank" class="side-btn left">
-        💌
-      </a>
+      <a href="document1.pdf" target="_blank" class="side-btn left">💌</a>
 
       <h1>Khloe ❤️ Rylen</h1>
 
-      <a href="document2.pdf" target="_blank" class="side-btn right">
-        🌹
-      </a>
+      <a href="document2.pdf" target="_blank" class="side-btn right">🌹</a>
 
       <p>Instagram Memories</p>
 
@@ -105,10 +95,10 @@
 
         function getReaction(text = "") {
           const t = text.toLowerCase();
-          if (t.includes("liked a message") || t.includes("reacted ❤️")) {
-            return true;
-          }
-          return false;
+          return (
+            t.includes("liked a message") ||
+            t.includes("reacted")
+          );
         }
 
         messages.forEach(msg => {
@@ -127,7 +117,6 @@
           let rawText =
             textBlock ? textBlock.innerText.trim() : "";
 
-          // REACTION HANDLING
           if (getReaction(rawText)) {
 
             const lastKey =
@@ -138,7 +127,6 @@
             return;
           }
 
-          const isEdited = rawText.includes("(edited)");
           const cleaned = cleanText(rawText);
 
           const key = sender + "|" + time;
@@ -147,8 +135,8 @@
             sender,
             time,
             text: cleaned.text,
-            isEdited,
-            liked: cleaned.liked
+            liked: cleaned.liked,
+            isEdited: rawText.includes("(edited)")
           });
 
         });
@@ -159,7 +147,7 @@
 
           const fragment = document.createDocumentFragment();
 
-          map.forEach(({ sender, time, text, isEdited, liked }) => {
+          map.forEach(({ sender, time, text, liked, isEdited }) => {
 
             const sText = (text || "").toLowerCase();
             const sSender = (sender || "").toLowerCase();
@@ -194,11 +182,6 @@
           });
 
           chat.appendChild(fragment);
-
-          requestAnimationFrame(() => {
-            chat.scrollTop = chat.scrollHeight;
-          });
-
         }
 
         render();
