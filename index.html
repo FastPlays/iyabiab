@@ -94,40 +94,37 @@
         // CLEAN TEXT
         function cleanText(text = "") {
 
-  // DETECT LIKE TAGS
-  const hasHeartTag =
-    text.includes("❤️Khloe") ||
-    text.includes("❤️Rylen") ||
-    text.includes("❤Khloe") ||
-    text.includes("❤Rylen");
+          const hasHeartTag =
+            text.includes("❤️Khloe") ||
+            text.includes("❤️Rylen") ||
+            text.includes("❤Khloe") ||
+            text.includes("❤Rylen");
 
-  // REMOVE HEART TAGS
-  text = text
-    .replace(/❤️Khloe/g, "")
-    .replace(/❤️Rylen/g, "")
-    .replace(/❤Khloe/g, "")
-    .replace(/❤Rylen/g, "")
-    .replace("(edited)", "")
-    .replace(/\s+/g, " ")
-    .trim();
+          text = text
+            .replace(/❤️Khloe/g, "")
+            .replace(/❤️Rylen/g, "")
+            .replace(/❤Khloe/g, "")
+            .replace(/❤Rylen/g, "")
+            .replace("(edited)", "")
+            .replace(/\s+/g, " ")
+            .trim();
 
-  // REEL LINKS ONLY
-  const reelMatch = text.match(
-    /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
-  );
+          const reelMatch = text.match(
+            /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
+          );
 
-  if (reelMatch) {
-    return {
-      text: reelMatch[0],
-      liked: hasHeartTag
-    };
-  }
+          if (reelMatch) {
+            return {
+              text: reelMatch[0],
+              liked: hasHeartTag
+            };
+          }
 
-  return {
-    text,
-    liked: hasHeartTag
-  };
-}
+          return {
+            text,
+            liked: hasHeartTag
+          };
+        }
 
         // REACTIONS
         function getReaction(text = "") {
@@ -185,8 +182,11 @@
           const isEdited =
             rawText.includes("(edited)");
 
-          const text =
+          const cleaned =
             cleanText(rawText);
+
+          const text =
+            cleaned.text;
 
           const key =
             sender + "|" + time + "|" + rawText;
@@ -199,7 +199,7 @@
             time,
             text,
             isEdited,
-            liked: false
+            liked: cleaned.liked
           };
 
           if (!existing) {
