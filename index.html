@@ -222,70 +222,83 @@
         });
 
         // RENDER
-        function render(filter = "") {
 
-          chat.innerHTML = "";
+function render(filter = "") {
 
-          map.forEach(({
-            sender,
-            time,
-            text,
-            isEdited,
-            liked
-          }) => {
+  chat.innerHTML = "";
 
-            const safeText =
-              (text || "").toLowerCase();
+  const fragment =
+    document.createDocumentFragment();
 
-            const safeSender =
-              (sender || "").toLowerCase();
+  map.forEach(({
+    sender,
+    time,
+    text,
+    isEdited,
+    liked
+  }) => {
 
-            if (
-              filter &&
-              !safeText.includes(filter.toLowerCase()) &&
-              !safeSender.includes(filter.toLowerCase())
-            ) {
-              return;
-            }
+    const safeText =
+      (text || "").toLowerCase();
 
-            const bubble =
-              document.createElement('div');
+    const safeSender =
+      (sender || "").toLowerCase();
 
-            bubble.className =
-              sender === 'Rylen'
-                ? 'message you'
-                : 'message her';
+    if (
+      filter &&
+      !safeText.includes(filter.toLowerCase()) &&
+      !safeSender.includes(filter.toLowerCase())
+    ) {
+      return;
+    }
 
-            bubble.innerHTML = `
-              <div class="name">
-                ${sender}
-              </div>
+    const bubble =
+      document.createElement('div');
 
-              ${text
-                ? `<div class="bubble">${text}</div>`
-                : ''
-              }
+    bubble.className =
+      sender === 'Rylen'
+        ? 'message you'
+        : 'message her';
 
-              ${liked
-                ? `<div class="liked-tag">❤️ liked</div>`
-                : ''
-              }
+    bubble.innerHTML = `
+      <div class="name">
+        ${sender}
+      </div>
 
-              <div class="meta">
-                ${isEdited
-                  ? `<span class="edited">edited</span>`
-                  : ''
-                }
-              </div>
+      ${text
+        ? `<div class="bubble">${text}</div>`
+        : ''
+      }
 
-              <div class="time">
-                ${time}
-              </div>
-            `;
+      ${liked
+        ? `<div class="liked-tag">❤️ liked</div>`
+        : ''
+      }
 
-            chat.appendChild(bubble);
+      <div class="meta">
+        ${isEdited
+          ? `<span class="edited">edited</span>`
+          : ''
+        }
+      </div>
 
-          });
+      <div class="time">
+        ${time}
+      </div>
+    `;
+
+    fragment.appendChild(bubble);
+
+  });
+
+  chat.appendChild(fragment);
+
+  // START AT BOTTOM LIKE INSTAGRAM
+  requestAnimationFrame(() => {
+    chat.scrollTop = chat.scrollHeight;
+  });
+
+}
 
           // SCROLL TO BOTTOM
           chat.scrollTop = chat.scrollHeight;
