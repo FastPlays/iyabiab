@@ -1,231 +1,335 @@
-html,
-body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: #e9eaed;
-  font-family: Arial;
-}
+<!DOCTYPE html>
+<html lang="en">
 
-/* HEADER */
-.top {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: white;
-  padding: 20px 16px;
-  text-align: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🕊️❤️</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 
-.top h1 {
-  margin: 0;
-  font-size: 26px;
-}
+<body>
 
-.top p {
-  margin-top: 6px;
-  font-size: 14px;
-  opacity: 0.6;
-}
+  <!-- LOGIN -->
+  <div id="loginScreen">
+    <div class="login-box">
 
-/* PDF BUTTONS */
-.side-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  text-decoration: none;
-  background: white;
-  padding: 10px 12px;
-  border-radius: 50px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-  font-size: 16px;
-  transition: 0.2s ease;
-}
+      <h2>K&R Memories</h2>
 
-.side-btn:hover {
-  transform: translateY(-50%) scale(1.08);
-}
+      <input
+        type="password"
+        id="passwordInput"
+        placeholder="Enter password"
+      >
 
-.side-btn.left {
-  left: 12px;
-}
+      <button onclick="checkPassword()">
+        Enter
+      </button>
 
-.side-btn.right {
-  right: 12px;
-}
+      <p id="error"></p>
 
-/* SEARCH */
-.search-box {
-  position: fixed;
-  top: 110px;
-  left: 0;
-  right: 0;
-  z-index: 90;
-  background: #e9eaed;
-  padding: 10px 12px;
-}
+    </div>
+  </div>
 
-.search-box input {
-  width: 100%;
-  max-width: 800px;
-  display: block;
-  margin: auto;
-  padding: 12px 16px;
-  border-radius: 20px;
-  border: 1px solid #ccc;
-  outline: none;
-  font-size: 16px;
-  box-sizing: border-box;
-}
+  <!-- SITE -->
+  <div id="siteContent" style="display:none;">
 
-/* CHAT */
-#chat {
-  position: fixed;
-  top: 175px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 12px;
-  max-width: 800px;
-  margin: 0 auto;
+    <!-- HEADER -->
+    <div class="top">
 
-  display: flex;
-  flex-direction: column;
-}
+      <a
+        href="document1.pdf"
+        target="_blank"
+        class="side-btn left"
+      >
+        💌
+      </a>
 
-/* MESSAGES */
-.message {
-  display: flex;
-  flex-direction: column;
-  margin: 10px 0;
-}
+      <h1>Khloe ❤️ Rylen</h1>
 
-.you {
-  align-items: flex-end;
-}
+      <a
+        href="document2.pdf"
+        target="_blank"
+        class="side-btn right"
+      >
+        🌹
+      </a>
 
-.her {
-  align-items: flex-start;
-}
+      <p>Instagram Memories</p>
 
-.name {
-  font-size: 11px;
-  opacity: 0.6;
-  margin-bottom: 4px;
-}
+    </div>
 
-.bubble {
-  max-width: 85%;
-  padding: 12px 14px;
-  border-radius: 18px;
-  line-height: 1.45;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  background: #F88379;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
+    <!-- SEARCH -->
+    <div class="search-box">
 
-.you .bubble {
-  background: #8B0000;
-  color: white;
-}
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Search messages..."
+      >
 
-.meta,
-.time {
-  font-size: 11px;
-  opacity: 0.6;
-  margin-top: 4px;
-}
+    </div>
 
-.edited {
-  font-style: italic;
-}
+    <!-- CHAT -->
+    <div id="chat"></div>
 
-/* LIKED */
-.liked-tag {
-  margin-top: 4px;
-  font-size: 12px;
-  color: #ff4f87;
-  font-weight: 600;
-}
+  </div>
 
-/* LOGIN */
-#loginScreen {
-  position: fixed;
-  inset: 0;
-  background: #f2f2f2;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
+  <!-- SCRIPT -->
+  <script>
 
-.login-box {
-  background: white;
-  padding: 40px;
-  border-radius: 25px;
-  text-align: center;
-  width: 300px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-}
+    const chat = document.getElementById('chat');
 
-.login-box input,
-.login-box button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 15px;
-  border-radius: 15px;
-  box-sizing: border-box;
-  font-size: 16px;
-}
+    fetch('message1.html')
+      .then(res => res.text())
+      .then(html => {
 
-.login-box button {
-  border: none;
-  background: #F88379;
-  color: white;
-  cursor: pointer;
-}
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
 
-#error {
-  color: red;
-  margin-top: 10px;
-}
+        const messages = doc.querySelectorAll('div.pam');
 
-/* MOBILE */
-@media (max-width: 768px) {
+        const map = new Map();
 
-  .top h1 {
-    font-size: 22px;
-  }
+        // CLEAN TEXT
+        function cleanText(text = "") {
 
-  .search-box {
-    top: 100px;
-  }
+          const hasHeartTag =
+            text.includes("❤️Khloe") ||
+            text.includes("❤️Rylen") ||
+            text.includes("❤Khloe") ||
+            text.includes("❤Rylen");
 
-  #chat {
-    top: 165px;
-    padding: 10px;
-  }
+          text = text
+            .replace(/❤️Khloe/g, "")
+            .replace(/❤️Rylen/g, "")
+            .replace(/❤Khloe/g, "")
+            .replace(/❤Rylen/g, "")
+            .replace("(edited)", "")
+            .replace(/\s+/g, " ")
+            .trim();
 
-  .bubble {
-    max-width: 92%;
-    font-size: 15px;
-  }
+          const reelMatch = text.match(
+            /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
+          );
 
-  .side-btn {
-    padding: 8px 10px;
-    font-size: 14px;
-  }
+          if (reelMatch) {
+            return {
+              text: reelMatch[0],
+              liked: hasHeartTag
+            };
+          }
 
-  .login-box {
-    width: calc(100% - 32px);
-    max-width: 340px;
-    padding: 28px 24px;
-  }
+          return {
+            text,
+            liked: hasHeartTag
+          };
+        }
 
-}
+        // REACTIONS
+        function getReaction(text = "") {
+
+          const t = text.toLowerCase();
+
+          if (
+            t.includes("liked a message") ||
+            t.includes("reacted ❤️")
+          ) {
+            return "❤️ liked";
+          }
+
+          return null;
+        }
+
+        // PARSE MESSAGES
+        messages.forEach(msg => {
+
+          const sender =
+            msg.querySelector('h2')
+              ?.innerText
+              ?.trim();
+
+          const time =
+            msg.querySelector('div._3-94._a6-o')
+              ?.innerText
+              ?.trim();
+
+          const textBlock =
+            msg.querySelector('div._a6-p');
+
+          if (!sender || !time) return;
+
+          let rawText =
+            textBlock
+              ? textBlock.innerText.trim()
+              : "";
+
+          const reaction =
+            getReaction(rawText);
+
+          // ADD LIKE TO PREVIOUS MESSAGE
+          if (reaction) {
+
+            const lastKey =
+              Array.from(map.keys()).pop();
+
+            if (lastKey) {
+              map.get(lastKey).liked = true;
+            }
+
+            return;
+          }
+
+          const isEdited =
+            rawText.includes("(edited)");
+
+          const cleaned =
+            cleanText(rawText);
+
+          const text =
+            cleaned.text;
+
+          // IMPORTANT FIX:
+          // USE ONLY SENDER + TIME
+          // SO EDITED MESSAGE REPLACES OLD ONE
+          const key =
+            sender + "|" + time;
+
+          const existing =
+            map.get(key);
+
+          const data = {
+            sender,
+            time,
+            text,
+            isEdited,
+            liked: cleaned.liked
+          };
+
+          // KEEP NEWEST EDITED VERSION ONLY
+          if (!existing) {
+
+            map.set(key, data);
+
+          } else {
+
+            if (isEdited) {
+              map.set(key, data);
+            }
+
+          }
+
+        });
+
+        // RENDER
+        function render(filter = "") {
+
+          chat.innerHTML = "";
+
+          map.forEach(({
+            sender,
+            time,
+            text,
+            isEdited,
+            liked
+          }) => {
+
+            const safeText =
+              (text || "").toLowerCase();
+
+            const safeSender =
+              (sender || "").toLowerCase();
+
+            if (
+              filter &&
+              !safeText.includes(filter.toLowerCase()) &&
+              !safeSender.includes(filter.toLowerCase())
+            ) {
+              return;
+            }
+
+            const bubble =
+              document.createElement('div');
+
+            bubble.className =
+              sender === 'Rylen'
+                ? 'message you'
+                : 'message her';
+
+            bubble.innerHTML = `
+              <div class="name">
+                ${sender}
+              </div>
+
+              ${text
+                ? `<div class="bubble">${text}</div>`
+                : ''
+              }
+
+              ${liked
+                ? `<div class="liked-tag">❤️ liked</div>`
+                : ''
+              }
+
+              <div class="meta">
+                ${isEdited
+                  ? `<span class="edited">edited</span>`
+                  : ''
+                }
+              </div>
+
+              <div class="time">
+                ${time}
+              </div>
+            `;
+
+            chat.appendChild(bubble);
+
+          });
+
+          // SCROLL TO BOTTOM
+          chat.scrollTop = chat.scrollHeight;
+        }
+
+        // INITIAL RENDER
+        render();
+
+        // SEARCH
+        document
+          .getElementById("searchInput")
+          .addEventListener("input", (e) => {
+
+            render(e.target.value);
+
+          });
+
+      });
+
+    // PASSWORD
+    function checkPassword() {
+
+      const password =
+        document.getElementById("passwordInput").value;
+
+      if (password === "iloveyou") {
+
+        document.getElementById("loginScreen")
+          .style.display = "none";
+
+        document.getElementById("siteContent")
+          .style.display = "block";
+
+      } else {
+
+        document.getElementById("error")
+          .innerText = "Wrong password";
+
+      }
+
+    }
+
+  </script>
+
+</body>
+
+</html>
