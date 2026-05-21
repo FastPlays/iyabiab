@@ -37,21 +37,13 @@
     <!-- HEADER -->
     <div class="top">
 
-      <a
-        href="document1.pdf"
-        target="_blank"
-        class="side-btn left"
-      >
+      <a href="document1.pdf" target="_blank" class="side-btn left">
         💌
       </a>
 
       <h1>Khloe ❤️ Rylen</h1>
 
-      <a
-        href="document2.pdf"
-        target="_blank"
-        class="side-btn right"
-      >
+      <a href="document2.pdf" target="_blank" class="side-btn right">
         🌹
       </a>
 
@@ -61,13 +53,7 @@
 
     <!-- SEARCH -->
     <div class="search-box">
-
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Search messages..."
-      >
-
+      <input id="searchInput" type="text" placeholder="Search messages...">
     </div>
 
     <!-- CHAT -->
@@ -75,7 +61,6 @@
 
   </div>
 
-  <!-- SCRIPT -->
   <script>
 
     const chat = document.getElementById('chat');
@@ -91,7 +76,6 @@
 
         const map = new Map();
 
-        // CLEAN TEXT
         function cleanText(text = "") {
 
           const hasHeartTag =
@@ -113,46 +97,27 @@
             /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
           );
 
-          if (reelMatch) {
-            return {
-              text: reelMatch[0],
-              liked: hasHeartTag
-            };
-          }
-
           return {
-            text,
+            text: reelMatch ? reelMatch[0] : text,
             liked: hasHeartTag
           };
         }
 
-        // REACTIONS
         function getReaction(text = "") {
-
           const t = text.toLowerCase();
-
-          if (
-            t.includes("liked a message") ||
-            t.includes("reacted ❤️")
-          ) {
-            return "❤️ liked";
+          if (t.includes("liked a message") || t.includes("reacted ❤️")) {
+            return true;
           }
-
-          return null;
+          return false;
         }
 
-        // PARSE MESSAGES
         messages.forEach(msg => {
 
           const sender =
-            msg.querySelector('h2')
-              ?.innerText
-              ?.trim();
+            msg.querySelector('h2')?.innerText?.trim();
 
           const time =
-            msg.querySelector('div._3-94._a6-o')
-              ?.innerText
-              ?.trim();
+            msg.querySelector('div._3-94._a6-o')?.innerText?.trim();
 
           const textBlock =
             msg.querySelector('div._a6-p');
@@ -160,183 +125,98 @@
           if (!sender || !time) return;
 
           let rawText =
-            textBlock
-              ? textBlock.innerText.trim()
-              : "";
+            textBlock ? textBlock.innerText.trim() : "";
 
-          const reaction =
-            getReaction(rawText);
-
-          // ADD LIKE TO PREVIOUS MESSAGE
-          if (reaction) {
+          // REACTION HANDLING
+          if (getReaction(rawText)) {
 
             const lastKey =
               Array.from(map.keys()).pop();
 
-            if (lastKey) {
-              map.get(lastKey).liked = true;
-            }
+            if (lastKey) map.get(lastKey).liked = true;
 
             return;
           }
 
-          const isEdited =
-            rawText.includes("(edited)");
+          const isEdited = rawText.includes("(edited)");
+          const cleaned = cleanText(rawText);
 
-          const cleaned =
-            cleanText(rawText);
+          const key = sender + "|" + time;
 
-          const text =
-            cleaned.text;
-
-          // IMPORTANT FIX:
-          // USE ONLY SENDER + TIME
-          // SO EDITED MESSAGE REPLACES OLD ONE
-          const key =
-            sender + "|" + time;
-
-          const existing =
-            map.get(key);
-
-          const data = {
+          map.set(key, {
             sender,
             time,
-            text,
+            text: cleaned.text,
             isEdited,
             liked: cleaned.liked
-          };
-
-          // KEEP NEWEST EDITED VERSION ONLY
-          if (!existing) {
-
-            map.set(key, data);
-
-          } else {
-
-            if (isEdited) {
-              map.set(key, data);
-            }
-
-          }
+          });
 
         });
 
-        // RENDER
+        function render(filter = "") {
 
-function render(filter = "") {
+          chat.innerHTML = "";
 
-  chat.innerHTML = "";
+          const fragment = document.createDocumentFragment();
 
-  const fragment =
-    document.createDocumentFragment();
+          map.forEach(({ sender, time, text, isEdited, liked }) => {
 
-  map.forEach(({
-    sender,
-    time,
-    text,
-    isEdited,
-    liked
-  }) => {
+            const sText = (text || "").toLowerCase();
+            const sSender = (sender || "").toLowerCase();
 
-    const safeText =
-      (text || "").toLowerCase();
+            if (
+              filter &&
+              !sText.includes(filter.toLowerCase()) &&
+              !sSender.includes(filter.toLowerCase())
+            ) return;
 
-    const safeSender =
-      (sender || "").toLowerCase();
+            const div = document.createElement("div");
 
-    if (
-      filter &&
-      !safeText.includes(filter.toLowerCase()) &&
-      !safeSender.includes(filter.toLowerCase())
-    ) {
-      return;
-    }
+            div.className =
+              sender === "Rylen" ? "message you" : "message her";
 
-    const bubble =
-      document.createElement('div');
+            div.innerHTML = `
+              <div class="name">${sender}</div>
 
-    bubble.className =
-      sender === 'Rylen'
-        ? 'message you'
-        : 'message her';
+              ${text ? `<div class="bubble">${text}</div>` : ""}
 
-    bubble.innerHTML = `
-      <div class="name">
-        ${sender}
-      </div>
+              ${liked ? `<div class="liked-tag">❤️ liked</div>` : ""}
 
-      ${text
-        ? `<div class="bubble">${text}</div>`
-        : ''
-      }
+              <div class="meta">
+                ${isEdited ? `<span class="edited">edited</span>` : ""}
+              </div>
 
-      ${liked
-        ? `<div class="liked-tag">❤️ liked</div>`
-        : ''
-      }
+              <div class="time">${time}</div>
+            `;
 
-      <div class="meta">
-        ${isEdited
-          ? `<span class="edited">edited</span>`
-          : ''
-        }
-      </div>
-
-      <div class="time">
-        ${time}
-      </div>
-    `;
-
-    fragment.appendChild(bubble);
-
-  });
-
-  chat.appendChild(fragment);
-
-  // START AT BOTTOM LIKE INSTAGRAM
-  requestAnimationFrame(() => {
-    chat.scrollTop = chat.scrollHeight;
-  });
-
-}
-
-          // SCROLL TO BOTTOM
-          chat.scrollTop = chat.scrollHeight;
-        }
-
-        // INITIAL RENDER
-        render();
-
-        // SEARCH
-        document
-          .getElementById("searchInput")
-          .addEventListener("input", (e) => {
-
-            render(e.target.value);
+            fragment.appendChild(div);
 
           });
 
+          chat.appendChild(fragment);
+
+          requestAnimationFrame(() => {
+            chat.scrollTop = chat.scrollHeight;
+          });
+
+        }
+
+        render();
+
+        document.getElementById("searchInput")
+          .addEventListener("input", e => render(e.target.value));
+
       });
 
-    // PASSWORD
     function checkPassword() {
 
-      const password =
-        document.getElementById("passwordInput").value;
+      const pw = document.getElementById("passwordInput").value;
 
-      if (password === "iloveyou") {
-
-        document.getElementById("loginScreen")
-          .style.display = "none";
-
-        document.getElementById("siteContent")
-          .style.display = "block";
-
+      if (pw === "iloveyou") {
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("siteContent").style.display = "block";
       } else {
-
-        document.getElementById("error")
-          .innerText = "Wrong password";
-
+        document.getElementById("error").innerText = "Wrong password";
       }
 
     }
