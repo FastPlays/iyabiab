@@ -134,18 +134,22 @@ fetch("message1.html")
   const latestMap =
     new Map();
 
+  /* REACTION REGEX */
+  const reactionRegex =
+    /([\p{Emoji_Presentation}\p{Extended_Pictographic}])\s*(Khloe|Rylen)\s*$/u;
+
   /* CLEAN MESSAGE TEXT */
   function cleanText(text = "") {
 
     text = text
 
-      .replace(/❤️\s*Khloe\s*$/gi, "")
-      .replace(/❤️\s*Rylen\s*$/gi, "")
-      .replace(/❤\s*Khloe\s*$/gi, "")
-      .replace(/❤\s*Rylen\s*$/gi, "")
+      /* REMOVE REACTION TAGS */
+      .replace(reactionRegex, "")
 
+      /* REMOVE EDITED TEXT */
       .replace(/\(edited\)/gi, "")
 
+      /* CLEAN SPACING */
       .replace(/\s+/g, " ")
 
       .trim();
@@ -206,19 +210,19 @@ fetch("message1.html")
 
     /* DETECT REACTIONS */
     let likedBy = "";
+    let reactionEmoji = "❤️";
 
-    if (
-      /❤️\s*Khloe\s*$/i.test(rawText) ||
-      /❤\s*Khloe\s*$/i.test(rawText)
-    ) {
-      likedBy = "Khloe";
-    }
+    const reactionMatch =
+      rawText.match(reactionRegex);
 
-    if (
-      /❤️\s*Rylen\s*$/i.test(rawText) ||
-      /❤\s*Rylen\s*$/i.test(rawText)
-    ) {
-      likedBy = "Rylen";
+    if (reactionMatch) {
+
+      reactionEmoji =
+        reactionMatch[1];
+
+      likedBy =
+        reactionMatch[2];
+
     }
 
     const isEdited =
@@ -245,7 +249,8 @@ fetch("message1.html")
         time,
         text,
         isEdited,
-        likedBy
+        likedBy,
+        reactionEmoji
       });
 
     } else {
@@ -267,7 +272,11 @@ fetch("message1.html")
 
         likedBy:
           likedBy ||
-          existing.likedBy
+          existing.likedBy,
+
+        reactionEmoji:
+          reactionEmoji ||
+          existing.reactionEmoji
 
       });
 
@@ -311,7 +320,8 @@ fetch("message1.html")
       time,
       text,
       isEdited,
-      likedBy
+      likedBy,
+      reactionEmoji
     }) => {
 
       const safeText =
@@ -328,7 +338,7 @@ fetch("message1.html")
         return;
       }
 
-      /* DATE SEPARATOR */
+      /* DATE DIVIDER */
       const currentDate =
         getDateLabel(time);
 
@@ -375,7 +385,11 @@ fetch("message1.html")
 
         ${
           likedBy
-          ? `<div class="liked">❤️ ${likedBy}</div>`
+          ? `
+          <div class="liked">
+            ${reactionEmoji} ${likedBy}
+          </div>
+          `
           : ""
         }
 
@@ -401,7 +415,7 @@ fetch("message1.html")
 
     });
 
-    /* ONLY AUTO SCROLL IF NOT SEARCHING */
+    /* AUTO SCROLL */
     if (!filter) {
 
       chat.scrollTop =
