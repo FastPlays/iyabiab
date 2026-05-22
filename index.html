@@ -175,102 +175,72 @@ fetch('message1.html')
   }
 
   // RAW MESSAGES
-  const rawMessages = [];
+  const messageMap = new Map();
 
-  messages.forEach(msg => {
+messages.forEach(msg => {
 
-    const sender =
-      msg.querySelector('h2')
-      ?.innerText
-      ?.trim();
+  const sender =
+    msg.querySelector('h2')
+    ?.innerText
+    ?.trim();
 
-    const time =
-      msg.querySelector('div._3-94._a6-o')
-      ?.innerText
-      ?.trim();
+  const time =
+    msg.querySelector('div._3-94._a6-o')
+    ?.innerText
+    ?.trim();
 
-    const textBlock =
-      msg.querySelector('div._a6-p');
+  const textBlock =
+    msg.querySelector('div._a6-p');
 
-    if (!sender || !time) return;
+  if (!sender || !time) return;
 
-    let rawText =
-      textBlock
-      ? textBlock.innerText.trim()
-      : "";
+  let rawText =
+    textBlock
+    ? textBlock.innerText.trim()
+    : "";
 
-    // REMOVE SYSTEM MESSAGES
-    if (isSystemMessage(rawText)) return;
+  // skip system messages
+  const lower = rawText.toLowerCase();
+  if (lower.includes("liked a message") || lower.includes("reacted")) return;
 
-    const isEdited =
-      rawText.includes("(edited)");
+  const isEdited = rawText.includes("(edited)");
 
-    let likedBy = "";
+  const clean = rawText
+    .replace(/\(edited\)/gi, "")
+    .replace(/❤️\s*Khloe/gi, "")
+    .replace(/❤️\s*Rylen/gi, "")
+    .replace(/❤\s*Khloe/gi, "")
+    .replace(/❤\s*Rylen/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
 
-    // DETECT REACTIONS
-    if (
-      /❤️\s*Khloe/i.test(rawText) ||
-      /❤\s*Khloe/i.test(rawText)
-    ) {
-      likedBy = "Khloe";
+  const key = sender + "|" + time;
+
+  const existing = messageMap.get(key);
+
+  const data = {
+    sender,
+    time,
+    text: clean,
+    isEdited
+  };
+
+  // IMPORTANT FIX:
+  // ALWAYS overwrite if edited exists OR if it's first entry
+  if (!existing) {
+    messageMap.set(key, data);
+  } else {
+    // if new one is edited, ALWAYS replace old one
+    if (isEdited) {
+      messageMap.set(key, data);
     }
-
-    if (
-      /❤️\s*Rylen/i.test(rawText) ||
-      /❤\s*Rylen/i.test(rawText)
-    ) {
-      likedBy = "Rylen";
-    }
-
-    const text =
-      cleanText(rawText);
-
-    rawMessages.push({
-      sender,
-      time,
-      text,
-      isEdited,
-      likedBy
-    });
-
-  });
-
-  // REMOVE OLD VERSION OF EDITED MESSAGES
-  const finalMessages = [];
-
-  for (let i = 0; i < rawMessages.length; i++) {
-
-    const msg =
-      rawMessages[i];
-
-    // IF MESSAGE IS NOT EDITED
-    if (!msg.isEdited) {
-
-      // CHECK NEXT MESSAGE
-      const next =
-        rawMessages[i + 1];
-
-      // IF NEXT MESSAGE IS EDITED
-      // BY SAME PERSON
-      // REMOVE OLD VERSION
-      if (
-        next &&
-        next.isEdited &&
-        next.sender === msg.sender
-      ) {
-
-        continue;
-
-      }
-
-    }
-
-    finalMessages.push(msg);
-
   }
 
+});
+
   // INSTAGRAM ORDER
-  finalMessages.reverse();
+const finalMessages = Array.from(messageMap.values());
+finalMessages.reverse();
 
   // RENDER CHAT
   function render(filter = "") {
