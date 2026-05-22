@@ -136,7 +136,7 @@ fetch('message1.html')
 
     text = text
 
-      // REMOVE REACTION TAGS
+      // REMOVE REACTION TEXT
       .replace(/❤️\s*Khloe/gi, "")
       .replace(/❤️\s*Rylen/gi, "")
       .replace(/❤\s*Khloe/gi, "")
@@ -145,7 +145,7 @@ fetch('message1.html')
       // REMOVE EDITED
       .replace(/\(edited\)/gi, "")
 
-      // CLEAN SPACES
+      // CLEAN SPACING
       .replace(/\s+/g, " ")
 
       .trim();
@@ -209,15 +209,19 @@ fetch('message1.html')
     let likedBy = "";
 
     // DETECT LIKES
-    if (/❤️\s*Khloe/i.test(rawText) ||
-        /❤\s*Khloe/i.test(rawText)) {
+    if (
+      /❤️\s*Khloe/i.test(rawText) ||
+      /❤\s*Khloe/i.test(rawText)
+    ) {
 
       likedBy = "Khloe";
 
     }
 
-    if (/❤️\s*Rylen/i.test(rawText) ||
-        /❤\s*Rylen/i.test(rawText)) {
+    if (
+      /❤️\s*Rylen/i.test(rawText) ||
+      /❤\s*Rylen/i.test(rawText)
+    ) {
 
       likedBy = "Rylen";
 
@@ -259,7 +263,7 @@ fetch('message1.html')
 
   });
 
-  // REVERSE FOR INSTAGRAM STYLE
+  // INSTAGRAM ORDER
   map.forEach(value => {
 
     finalMessages.push(value);
@@ -309,17 +313,25 @@ fetch('message1.html')
           ${sender}
         </div>
 
-        ${
-          text
-          ? `<div class="bubble">${text}</div>`
-          : ''
-        }
+        <div class="bubble-wrap">
 
-        ${
-          likedBy
-          ? `<div class="liked-tag">❤️</div>`
-          : ''
-        }
+          ${
+            text
+            ? `<div class="bubble">${text}</div>`
+            : ''
+          }
+
+          ${
+            likedBy
+            ? `
+              <div class="liked">
+                ❤️ ${likedBy}
+              </div>
+            `
+            : ''
+          }
+
+        </div>
 
         <div class="meta">
 
