@@ -160,12 +160,6 @@ body {
   margin-bottom: 4px;
 }
 
-/* BUBBLE WRAP */
-.bubble-wrap {
-  position: relative;
-  display: inline-block;
-}
-
 /* MESSAGE BUBBLE */
 .bubble {
   max-width: 85%;
@@ -190,17 +184,25 @@ body {
   color: white;
 }
 
-/* ORIGINAL LIKE STYLE */
+/* ORIGINAL REACTION STYLE */
 .liked {
   font-size: 12px;
-
-  margin-top: 4px;
 
   color: #e1306c;
 
   font-weight: 600;
+
+  margin-top: 4px;
+
+  padding-left: 6px;
 }
 
+.you .liked {
+  text-align: right;
+  padding-right: 6px;
+}
+
+/* META */
 .meta,
 .time {
   font-size: 11px;
