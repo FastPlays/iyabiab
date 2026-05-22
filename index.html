@@ -137,36 +137,24 @@ fetch('message1.html')
   // CLEAN TEXT
   function cleanText(text = "") {
 
-    // detect reactions
-    const likedByKhloe =
-      text.includes("❤️Khloe");
-
-    const likedByRylen =
-      text.includes("❤️Rylen");
-
     text = text
-      .replace(/❤️Khloe/g, "")
-      .replace(/❤️Rylen/g, "")
-      .replace(/\(edited\)/g, "")
+      .replace("❤Khloe", "")
+      .replace("❤Rylen", "")
+      .replace("(edited)", "")
       .replace(/\s+/g, " ")
       .trim();
 
-    // reel links only
+    // REEL LINKS
     const reelMatch =
       text.match(
         /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
       );
 
     if (reelMatch) {
-      text = reelMatch[0];
+      return reelMatch[0];
     }
 
-    return {
-      text,
-      liked:
-        likedByKhloe ||
-        likedByRylen
-    };
+    return text;
 
   }
 
@@ -178,13 +166,14 @@ fetch('message1.html')
 
     return (
       t.includes("liked a message") ||
-      t.includes("reacted ❤️ to your message") ||
       t.includes("reacted")
     );
 
   }
 
-  // PROCESS MESSAGES
+  // BUILD MESSAGE ARRAY
+  const finalMessages = [];
+
   messages.forEach(msg => {
 
     const sender =
@@ -212,29 +201,11 @@ fetch('message1.html')
     const isEdited =
       rawText.includes("(edited)");
 
-    const cleaned =
+    const text =
       cleanText(rawText);
 
-    const text =
-      cleaned.text;
-
-    const liked =
-      cleaned.liked;
-
-    // IMPORTANT:
-    // remove "(edited)" from duplicate key
-    const normalizedText =
-      text
-      .replace(/\(edited\)/g, "")
-      .trim();
-
-    // BETTER DUPLICATE DETECTION
     const key =
-      sender +
-      "|" +
-      time +
-      "|" +
-      normalizedText;
+      sender + "|" + time;
 
     const existing =
       map.get(key);
@@ -243,11 +214,9 @@ fetch('message1.html')
       sender,
       time,
       text,
-      liked,
       isEdited
     };
 
-    // keep ONLY edited version
     if (!existing) {
 
       map.set(key, data);
@@ -267,9 +236,15 @@ fetch('message1.html')
 
   });
 
-  // NEWEST AT BOTTOM
-  const finalMessages =
-    Array.from(map.values()).reverse();
+  // IMPORTANT:
+  // reverse so newest = bottom
+  map.forEach(value => {
+
+    finalMessages.push(value);
+
+  });
+
+  finalMessages.reverse();
 
   // RENDER
   function render(filter = "") {
@@ -280,7 +255,6 @@ fetch('message1.html')
       sender,
       time,
       text,
-      liked,
       isEdited
     }) => {
 
@@ -314,36 +288,14 @@ fetch('message1.html')
 
         ${
           text
-          ? `
-          <div class="bubble-wrapper">
-
-            <div class="bubble">
-              ${text}
-            </div>
-
-            ${
-              liked
-              ? `
-                <div class="reaction">
-                  ❤️
-                </div>
-              `
-              : ''
-            }
-
-          </div>
-          `
+          ? `<div class="bubble">${text}</div>`
           : ''
         }
 
         <div class="meta">
           ${
             isEdited
-            ? `
-            <span class="edited">
-              edited
-            </span>
-            `
+            ? `<span class="edited">edited</span>`
             : ''
           }
         </div>
