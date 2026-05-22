@@ -133,16 +133,16 @@ fetch('message1.html')
 
     text = text
 
-      // REMOVE REACTIONS
+      // REMOVE REACTION TEXT
       .replace(/❤️\s*Khloe/gi, "")
       .replace(/❤️\s*Rylen/gi, "")
       .replace(/❤\s*Khloe/gi, "")
       .replace(/❤\s*Rylen/gi, "")
 
-      // REMOVE EDITED LABEL
+      // REMOVE EDITED
       .replace(/\(edited\)/gi, "")
 
-      // CLEAN SPACES
+      // CLEAN SPACING
       .replace(/\s+/g, " ")
 
       .trim();
@@ -175,7 +175,7 @@ fetch('message1.html')
   }
 
   // STEP 1:
-  // BUILD RAW MESSAGE ARRAY
+  // BUILD RAW ARRAY
   const rawMessages = [];
 
   messages.forEach(msg => {
@@ -207,7 +207,7 @@ fetch('message1.html')
 
     let likedBy = "";
 
-    // REACTIONS
+    // REACTION DETECTION
     if (
       /❤️\s*Khloe/i.test(rawText) ||
       /❤\s*Khloe/i.test(rawText)
@@ -236,35 +236,49 @@ fetch('message1.html')
   });
 
   // STEP 2:
-  // REMOVE OLD VERSIONS OF EDITED MESSAGES
+  // REMOVE ORIGINAL VERSION
   const finalMessages = [];
 
   rawMessages.forEach((msg, index) => {
 
-    // ONLY CHECK NON-EDITED MESSAGES
+    // IF NOT EDITED
     if (!msg.isEdited) {
 
-      const hasEditedVersion =
+      // LOOK FOR EDITED VERSION
+      const editedExists =
         rawMessages.some(other => {
 
+          // MUST BE EDITED
+          if (!other.isEdited) {
+            return false;
+          }
+
+          // SAME PERSON
+          if (other.sender !== msg.sender) {
+            return false;
+          }
+
+          // EMPTY TEXT SAFETY
+          if (!other.text || !msg.text) {
+            return false;
+          }
+
+          // SIMILAR MESSAGE
+          const a =
+            other.text.toLowerCase();
+
+          const b =
+            msg.text.toLowerCase();
+
           return (
-
-            other.isEdited &&
-
-            other.sender === msg.sender &&
-
-            // VERY SIMILAR TEXT
-            (
-              other.text.includes(msg.text) ||
-              msg.text.includes(other.text)
-            )
-
+            a.includes(b) ||
+            b.includes(a)
           );
 
         });
 
-      // SKIP OLD MESSAGE
-      if (hasEditedVersion) {
+      // SKIP OLD VERSION
+      if (editedExists) {
         return;
       }
 
