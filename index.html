@@ -142,7 +142,7 @@ fetch('message1.html')
       // REMOVE EDITED LABEL
       .replace(/\(edited\)/gi, "")
 
-      // CLEAN SPACING
+      // CLEAN SPACES
       .replace(/\s+/g, " ")
 
       .trim();
@@ -174,11 +174,9 @@ fetch('message1.html')
 
   }
 
-  // FINAL ARRAY
-  const finalMessages = [];
-
-  // TRACK EDITED MESSAGES
-  const editedTracker = new Map();
+  // STEP 1:
+  // BUILD RAW MESSAGE ARRAY
+  const rawMessages = [];
 
   messages.forEach(msg => {
 
@@ -209,68 +207,453 @@ fetch('message1.html')
 
     let likedBy = "";
 
-    // DETECT REACTIONS
+    // REACTIONS
     if (
       /❤️\s*Khloe/i.test(rawText) ||
       /❤\s*Khloe/i.test(rawText)
     ) {
-
       likedBy = "Khloe";
-
     }
 
     if (
       /❤️\s*Rylen/i.test(rawText) ||
       /❤\s*Rylen/i.test(rawText)
     ) {
-
       likedBy = "Rylen";
-
     }
 
     const text =
       cleanText(rawText);
 
-    // BETTER EDIT TRACKING KEY
-    // sender + nearby text
-    const shortText =
-      text.substring(0, 40);
-
-    const key =
-      sender + "|" + shortText;
-
-    const data = {
+    rawMessages.push({
       sender,
       time,
       text,
       isEdited,
       likedBy
-    };
+    });
 
-    // IF MESSAGE IS EDITED:
-    // REPLACE OLD VERSION
-    if (isEdited) {
+  });
 
-      editedTracker.set(key, data);
+  // STEP 2:
+  // REMOVE OLD VERSIONS OF EDITED MESSAGES
+  const finalMessages = [];
 
-    } else {
+  rawMessages.forEach((msg, index) => {
 
-      // ONLY KEEP NON-EDITED
-      // IF NO EDITED VERSION EXISTS
-      if (!editedTracker.has(key)) {
+    // ONLY CHECK NON-EDITED MESSAGES
+    if (!msg.isEdited) {
 
-        editedTracker.set(key, data);
+      const hasEditedVersion =
+        rawMessages.some(other => {
 
+          return (
+
+            other.isEdited &&
+
+            other.sender === msg.sender &&
+
+            // VERY SIMILAR TEXT
+            (
+              other.text.includes(msg.text) ||
+              msg.text.includes(other.text)
+            )
+
+          );
+
+        });
+
+      // SKIP OLD MESSAGE
+      if (hasEditedVersion) {
+        return;
       }
 
     }
 
+    finalMessages.push(msg);
+
   });
 
-  // CONVERT TO ARRAY
-  editedTracker.forEach(value => {
+  // INSTAGRAM ORDER
+  finalMessages.reverse();
 
-    finalMessages.push(value);
+  // RENDER
+  function render(filter = "") {
+
+    chat.innerHTML = "";
+
+    finalMessages.forEach(({
+      sender,
+      time,
+      text,
+      isEdited,
+      likedBy
+    }) => {
+
+      const safeText =
+        (text || "").toLowerCase();
+
+      const safeSender =
+        (sender || "").toLowerCase();
+
+      if (
+        filter &&
+        !safeText.includes(filter.toLowerCase()) &&
+        !safeSender.includes(filter.toLowerCase())
+      ) {
+        return;
+      }
+
+      const bubble =
+        document.createElement('div');
+
+      bubble.className =
+        sender === 'Rylen'
+        ? 'message you'
+        : 'message her';
+
+      bubble.innerHTML = `
+
+        <div class="name">
+          ${sender}
+        </div>
+
+        ${
+          text
+          ? `
+            <div class="bubble">
+              ${text}
+            </div>
+          `
+          : ''
+        }
+
+        ${
+          likedBy
+          ? `
+            <div class="liked">
+              ❤️${likedBy}
+            </div>
+          `
+          : ''
+        }
+
+        <div class="meta">
+
+          ${
+            isEdited
+            ? `<span class="edited">edited</span>`
+            : ''
+          }
+
+        </div>
+
+        <div class="time">
+          ${time}
+        </div>
+
+      `;
+
+      chat.appendChild(bubble);
+
+    });
+
+    chat.scrollTop =
+      chat.scrollHeight;
+
+  }
+
+  // INITIAL RENDER
+  render();
+
+  // SEARCH
+  document
+    .getElementById("searchInput")
+
+    .addEventListener("input", (e) => {
+
+      render(e.target.value);
+
+    });
+
+});
+
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🕊️❤️</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+
+    <h2>K&R Memories</h2>
+
+    <input
+      type="password"
+      id="passwordInput"
+      placeholder="Enter password"
+    >
+
+    <button onclick="checkPassword()">
+      Enter
+    </button>
+
+    <p id="error"></p>
+
+  </div>
+</div>
+
+<!-- SITE -->
+<div id="siteContent">
+
+  <!-- HEADER -->
+  <div class="top">
+
+    <a
+      href="letter1.pdf"
+      target="_blank"
+      class="side-btn left"
+    >
+      💌
+    </a>
+
+    <h1>Khloe ❤️ Rylen</h1>
+
+    <a
+      href="letter2.pdf"
+      target="_blank"
+      class="side-btn right"
+    >
+      🌹
+    </a>
+
+    <p>Instagram Memories</p>
+
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-box">
+
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="Search messages..."
+    >
+
+  </div>
+
+  <!-- CHAT -->
+  <div id="chat"></div>
+
+</div>
+
+<script>
+
+const chat =
+  document.getElementById("chat");
+
+const siteContent =
+  document.getElementById("siteContent");
+
+// HIDE SITE
+siteContent.style.visibility = "hidden";
+
+// PASSWORD
+function checkPassword() {
+
+  const password =
+    document.getElementById("passwordInput").value;
+
+  if(password === "iloveyou") {
+
+    document.getElementById("loginScreen")
+      .style.display = "none";
+
+    siteContent.style.visibility = "visible";
+
+  } else {
+
+    document.getElementById("error")
+      .innerText = "Wrong password";
+
+  }
+
+}
+
+// LOAD CHAT
+fetch('message1.html')
+
+.then(res => res.text())
+
+.then(html => {
+
+  const parser =
+    new DOMParser();
+
+  const doc =
+    parser.parseFromString(
+      html,
+      'text/html'
+    );
+
+  const messages =
+    Array.from(
+      doc.querySelectorAll('div.pam')
+    );
+
+  // CLEAN TEXT
+  function cleanText(text = "") {
+
+    text = text
+
+      // REMOVE REACTIONS
+      .replace(/❤️\s*Khloe/gi, "")
+      .replace(/❤️\s*Rylen/gi, "")
+      .replace(/❤\s*Khloe/gi, "")
+      .replace(/❤\s*Rylen/gi, "")
+
+      // REMOVE EDITED LABEL
+      .replace(/\(edited\)/gi, "")
+
+      // CLEAN SPACES
+      .replace(/\s+/g, " ")
+
+      .trim();
+
+    // REELS
+    const reelMatch =
+      text.match(
+        /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
+      );
+
+    if (reelMatch) {
+      return reelMatch[0];
+    }
+
+    return text;
+
+  }
+
+  // REMOVE SYSTEM MESSAGES
+  function isSystemMessage(text = "") {
+
+    const t =
+      text.toLowerCase();
+
+    return (
+      t.includes("liked a message") ||
+      t.includes("reacted")
+    );
+
+  }
+
+  // STEP 1:
+  // BUILD RAW MESSAGE ARRAY
+  const rawMessages = [];
+
+  messages.forEach(msg => {
+
+    const sender =
+      msg.querySelector('h2')
+      ?.innerText
+      ?.trim();
+
+    const time =
+      msg.querySelector('div._3-94._a6-o')
+      ?.innerText
+      ?.trim();
+
+    const textBlock =
+      msg.querySelector('div._a6-p');
+
+    if (!sender || !time) return;
+
+    let rawText =
+      textBlock
+      ? textBlock.innerText.trim()
+      : "";
+
+    if (isSystemMessage(rawText)) return;
+
+    const isEdited =
+      rawText.includes("(edited)");
+
+    let likedBy = "";
+
+    // REACTIONS
+    if (
+      /❤️\s*Khloe/i.test(rawText) ||
+      /❤\s*Khloe/i.test(rawText)
+    ) {
+      likedBy = "Khloe";
+    }
+
+    if (
+      /❤️\s*Rylen/i.test(rawText) ||
+      /❤\s*Rylen/i.test(rawText)
+    ) {
+      likedBy = "Rylen";
+    }
+
+    const text =
+      cleanText(rawText);
+
+    rawMessages.push({
+      sender,
+      time,
+      text,
+      isEdited,
+      likedBy
+    });
+
+  });
+
+  // STEP 2:
+  // REMOVE OLD VERSIONS OF EDITED MESSAGES
+  const finalMessages = [];
+
+  rawMessages.forEach((msg, index) => {
+
+    // ONLY CHECK NON-EDITED MESSAGES
+    if (!msg.isEdited) {
+
+      const hasEditedVersion =
+        rawMessages.some(other => {
+
+          return (
+
+            other.isEdited &&
+
+            other.sender === msg.sender &&
+
+            // VERY SIMILAR TEXT
+            (
+              other.text.includes(msg.text) ||
+              msg.text.includes(other.text)
+            )
+
+          );
+
+        });
+
+      // SKIP OLD MESSAGE
+      if (hasEditedVersion) {
+        return;
+      }
+
+    }
+
+    finalMessages.push(msg);
 
   });
 
