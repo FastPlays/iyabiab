@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>🕊️❤️</title>
-
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -14,7 +11,6 @@
 
 <!-- LOGIN -->
 <div id="loginScreen">
-
   <div class="login-box">
 
     <h2>K&R Memories</h2>
@@ -32,7 +28,6 @@
     <p id="error"></p>
 
   </div>
-
 </div>
 
 <!-- SITE -->
@@ -96,7 +91,7 @@ function checkPassword() {
   const password =
     document.getElementById("passwordInput").value;
 
-  if (password === "iloveyou") {
+  if(password === "iloveyou") {
 
     document.getElementById("loginScreen")
       .style.display = "none";
@@ -112,7 +107,7 @@ function checkPassword() {
 
 }
 
-// LOAD INSTAGRAM HTML
+// LOAD CHAT
 fetch('message1.html')
 
 .then(res => res.text())
@@ -129,21 +124,34 @@ fetch('message1.html')
     );
 
   const messages =
-    doc.querySelectorAll('div.pam');
+    Array.from(
+      doc.querySelectorAll('div.pam')
+    );
 
-  const finalMessages = [];
+  const map =
+    new Map();
 
-  // CLEAN MESSAGE TEXT
+  // CLEAN TEXT
   function cleanText(text = "") {
 
-    return text
-      .replace(/❤️Khloe/g, "")
-      .replace(/❤️Rylen/g, "")
-      .replace(/❤Khloe/g, "")
-      .replace(/❤Rylen/g, "")
-      .replace(/\(edited\)/g, "")
+    text = text
+      .replace("❤Khloe", "")
+      .replace("❤Rylen", "")
+      .replace("(edited)", "")
       .replace(/\s+/g, " ")
       .trim();
+
+    // REEL LINKS
+    const reelMatch =
+      text.match(
+        /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
+      );
+
+    if (reelMatch) {
+      return reelMatch[0];
+    }
+
+    return text;
 
   }
 
@@ -160,28 +168,9 @@ fetch('message1.html')
 
   }
 
-  // WHO REACTED
-  function getReaction(text = "") {
+  // FINAL MESSAGE ARRAY
+  const finalMessages = [];
 
-    if (
-      text.includes("❤️Khloe") ||
-      text.includes("❤Khloe")
-    ) {
-      return "Khloe";
-    }
-
-    if (
-      text.includes("❤️Rylen") ||
-      text.includes("❤Rylen")
-    ) {
-      return "Rylen";
-    }
-
-    return null;
-
-  }
-
-  // PROCESS MESSAGES
   messages.forEach(msg => {
 
     const sender =
@@ -194,84 +183,83 @@ fetch('message1.html')
       ?.innerText
       ?.trim();
 
-    if (!sender || !time) return;
-
     const textBlock =
       msg.querySelector('div._a6-p');
+
+    if (!sender || !time) return;
 
     let rawText =
       textBlock
       ? textBlock.innerText.trim()
-      : '';
+      : "";
 
     if (isSystemMessage(rawText)) return;
 
     const isEdited =
-      rawText.includes('(edited)');
+      rawText.includes("(edited)");
 
-    const reaction =
-      getReaction(rawText);
-
-    let text =
+    const text =
       cleanText(rawText);
 
-    // REELS
-    const reelMatch =
-      text.match(
-        /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
-      );
+    const key =
+      sender + "|" + time;
 
-    if (reelMatch) {
-      text = reelMatch[0];
-    }
+    const existing =
+      map.get(key);
 
-    finalMessages.push({
+    const data = {
       sender,
       time,
       text,
-      isEdited,
-      reaction
-    });
+      isEdited
+    };
 
-  });
+    if (!existing) {
 
-  // REMOVE OLD UNEDITED DUPLICATES
-  const cleaned = [];
+      map.set(key, data);
 
-  finalMessages.forEach((msg, i) => {
+    } else {
 
-    const next =
-      finalMessages[i + 1];
+      if (
+        isEdited &&
+        !existing.isEdited
+      ) {
 
-    if (
-      next &&
-      msg.sender === next.sender &&
-      msg.time === next.time &&
-      !msg.isEdited &&
-      next.isEdited
-    ) {
-      return;
+        map.set(key, data);
+
+      }
+
     }
 
-    cleaned.push(msg);
+  });
+
+  // IMPORTANT:
+  // reverse message order
+  map.forEach(value => {
+
+    finalMessages.push(value);
 
   });
 
-  // NEWEST AT BOTTOM
-  cleaned.reverse();
+  finalMessages.reverse();
 
-  // RENDER CHAT
+  // RENDER
   function render(filter = "") {
 
     chat.innerHTML = "";
 
-    cleaned.forEach(msg => {
+    finalMessages.forEach(({
+      sender,
+      time,
+      text,
+      isEdited
+    }) => {
 
       const safeText =
-        (msg.text || "").toLowerCase();
+        (text || "").toLowerCase();
 
       const safeSender =
-        (msg.sender || "").toLowerCase();
+        (sender || "").toLowerCase();
 
       if (
         filter &&
@@ -285,54 +273,32 @@ fetch('message1.html')
         document.createElement('div');
 
       bubble.className =
-        msg.sender === 'Rylen'
+        sender === 'Rylen'
         ? 'message you'
         : 'message her';
 
       bubble.innerHTML = `
 
         <div class="name">
-          ${msg.sender}
+          ${sender}
         </div>
 
         ${
-          msg.text
-          ? `
-            <div class="bubble-wrap">
-
-              <div class="bubble">
-                ${msg.text}
-              </div>
-
-              ${
-                msg.reaction
-                ? `
-                  <div class="liked">
-                    ❤️ ${msg.reaction}
-                  </div>
-                `
-                : ''
-              }
-
-            </div>
-          `
+          text
+          ? `<div class="bubble">${text}</div>`
           : ''
         }
 
-        ${
-          msg.isEdited
-          ? `
-            <div class="meta">
-              <span class="edited">
-                edited
-              </span>
-            </div>
-          `
-          : ''
-        }
+        <div class="meta">
+          ${
+            isEdited
+            ? `<span class="edited">edited</span>`
+            : ''
+          }
+        </div>
 
         <div class="time">
-          ${msg.time}
+          ${time}
         </div>
 
       `;
@@ -341,20 +307,20 @@ fetch('message1.html')
 
     });
 
-    // SCROLL TO BOTTOM
+    // INSTANT BOTTOM POSITION
     chat.scrollTop =
       chat.scrollHeight;
 
   }
 
-  // INITIAL
+  // INITIAL RENDER
   render();
 
   // SEARCH
   document
     .getElementById("searchInput")
 
-    .addEventListener("input", e => {
+    .addEventListener("input", (e) => {
 
       render(e.target.value);
 
