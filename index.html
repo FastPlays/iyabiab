@@ -128,21 +128,18 @@ fetch('message1.html')
       doc.querySelectorAll('div.pam')
     );
 
-  const map =
-    new Map();
-
   // CLEAN TEXT
   function cleanText(text = "") {
 
     text = text
 
-      // REMOVE REACTION TEXT
+      // REMOVE REACTIONS
       .replace(/❤️\s*Khloe/gi, "")
       .replace(/❤️\s*Rylen/gi, "")
       .replace(/❤\s*Khloe/gi, "")
       .replace(/❤\s*Rylen/gi, "")
 
-      // REMOVE EDITED
+      // REMOVE EDITED LABEL
       .replace(/\(edited\)/gi, "")
 
       // CLEAN SPACING
@@ -177,7 +174,11 @@ fetch('message1.html')
 
   }
 
+  // FINAL ARRAY
   const finalMessages = [];
+
+  // TRACK EDITED MESSAGES
+  const editedTracker = new Map();
 
   messages.forEach(msg => {
 
@@ -230,11 +231,13 @@ fetch('message1.html')
     const text =
       cleanText(rawText);
 
-    const key =
-      sender + "|" + time;
+    // BETTER EDIT TRACKING KEY
+    // sender + nearby text
+    const shortText =
+      text.substring(0, 40);
 
-    const existing =
-      map.get(key);
+    const key =
+      sender + "|" + shortText;
 
     const data = {
       sender,
@@ -244,18 +247,19 @@ fetch('message1.html')
       likedBy
     };
 
-    if (!existing) {
+    // IF MESSAGE IS EDITED:
+    // REPLACE OLD VERSION
+    if (isEdited) {
 
-      map.set(key, data);
+      editedTracker.set(key, data);
 
     } else {
 
-      if (
-        isEdited &&
-        !existing.isEdited
-      ) {
+      // ONLY KEEP NON-EDITED
+      // IF NO EDITED VERSION EXISTS
+      if (!editedTracker.has(key)) {
 
-        map.set(key, data);
+        editedTracker.set(key, data);
 
       }
 
@@ -263,13 +267,14 @@ fetch('message1.html')
 
   });
 
-  // INSTAGRAM ORDER
-  map.forEach(value => {
+  // CONVERT TO ARRAY
+  editedTracker.forEach(value => {
 
     finalMessages.push(value);
 
   });
 
+  // INSTAGRAM ORDER
   finalMessages.reverse();
 
   // RENDER
