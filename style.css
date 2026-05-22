@@ -132,6 +132,8 @@ body {
   max-width: 800px;
 
   margin: 0 auto;
+
+  scroll-behavior: auto;
 }
 
 /* MESSAGE */
@@ -152,17 +154,17 @@ body {
 
 .name {
   font-size: 11px;
-
   opacity: 0.6;
-
   margin-bottom: 4px;
 }
 
+/* BUBBLE WRAP */
 .bubble-wrap {
   position: relative;
   display: inline-block;
 }
 
+/* MESSAGE BUBBLE */
 .bubble {
   max-width: 85%;
 
@@ -187,10 +189,11 @@ body {
 }
 
 /* LIKE TAG */
-.liked-tag {
+.like-tag {
   position: absolute;
+
+  bottom: -10px;
   right: -8px;
-  bottom: -8px;
 
   background: white;
 
@@ -208,7 +211,7 @@ body {
 .time {
   font-size: 11px;
   opacity: 0.6;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .edited {
