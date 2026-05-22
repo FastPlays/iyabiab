@@ -82,7 +82,7 @@ const chat =
 const siteContent =
   document.getElementById("siteContent");
 
-// HIDE SITE BEFORE PASSWORD
+// HIDE SITE
 siteContent.style.visibility = "hidden";
 
 // PASSWORD
@@ -128,12 +128,23 @@ fetch('message1.html')
       doc.querySelectorAll('div.pam')
     );
 
-  // IMPORTANT:
-  // reverse because Instagram export
-  // is newest -> oldest
-  messages.reverse();
+  const finalMessages = [];
 
-  // REMOVE SYSTEM MESSAGES
+  // CLEAN MESSAGE TEXT
+  function cleanText(text = "") {
+
+    return text
+      .replace(/❤️Khloe/g, "")
+      .replace(/❤️Rylen/g, "")
+      .replace(/❤Khloe/g, "")
+      .replace(/❤Rylen/g, "")
+      .replace(/\(edited\)/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  }
+
+  // DETECT SYSTEM MESSAGES
   function isSystemMessage(text = "") {
 
     const t =
@@ -146,25 +157,19 @@ fetch('message1.html')
 
   }
 
-  // CLEAN TEXT
-  function cleanText(text = "") {
+  // DETECT LIKES
+  function detectLiked(text = "") {
 
-    return text
-      .replace(/❤Khloe/g, "")
-      .replace(/❤Rylen/g, "")
-      .replace(/❤️Khloe/g, "")
-      .replace(/❤️Rylen/g, "")
-      .replace(/\(edited\)/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
+    return (
+      text.includes("❤️Khloe") ||
+      text.includes("❤️Rylen") ||
+      text.includes("❤Khloe") ||
+      text.includes("❤Rylen")
+    );
 
   }
 
-  const finalMessages = [];
-
-  const editedTracker =
-    new Map();
-
+  // PROCESS MESSAGES
   messages.forEach(msg => {
 
     const sender =
@@ -189,82 +194,75 @@ fetch('message1.html')
 
     if (isSystemMessage(rawText)) return;
 
-    // DETECT LIKE
-    const liked =
-      rawText.includes("❤Khloe") ||
-      rawText.includes("❤Rylen") ||
-      rawText.includes("❤️Khloe") ||
-      rawText.includes("❤️Rylen");
-
     const isEdited =
       rawText.includes("(edited)");
 
-    const cleanedText =
+    const liked =
+      detectLiked(rawText);
+
+    const text =
       cleanText(rawText);
 
-    // REELS ONLY SHOW URL
+    // REELS
     const reelMatch =
-      cleanedText.match(
+      text.match(
         /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
       );
 
     const finalText =
       reelMatch
       ? reelMatch[0]
-      : cleanedText;
-
-    // IMPORTANT:
-    // identify original + edited copies
-    const editKey =
-      sender + "|" + time;
-
-    // if edited version exists,
-    // remove older unedited one
-    if (isEdited) {
-
-      editedTracker.set(editKey, true);
-
-      // remove old copy
-      const existingIndex =
-        finalMessages.findIndex(m =>
-          m.sender === sender &&
-          m.time === time
-        );
-
-      if (existingIndex !== -1) {
-        finalMessages.splice(existingIndex, 1);
-      }
-
-    } else {
-
-      // skip if edited already exists
-      if (editedTracker.has(editKey)) {
-        return;
-      }
-
-    }
+      : text;
 
     finalMessages.push({
       sender,
       time,
       text: finalText,
-      liked,
-      isEdited
+      isEdited,
+      liked
     });
 
   });
+
+  // REMOVE OLD VERSION OF EDITED MESSAGES
+  const deduped = [];
+
+  finalMessages.forEach((msg, index) => {
+
+    const next =
+      finalMessages[index + 1];
+
+    // if same sender + same time
+    // and next one is edited
+    // remove old unedited one
+    if (
+      next &&
+      msg.sender === next.sender &&
+      msg.time === next.time &&
+      !msg.isEdited &&
+      next.isEdited
+    ) {
+      return;
+    }
+
+    deduped.push(msg);
+
+  });
+
+  // REVERSE SO NEWEST IS BOTTOM
+  deduped.reverse();
 
   // RENDER
   function render(filter = "") {
 
     chat.innerHTML = "";
 
-    finalMessages.forEach(({
+    deduped.forEach(({
       sender,
       time,
       text,
-      liked,
-      isEdited
+      isEdited,
+      liked
     }) => {
 
       const safeText =
@@ -306,8 +304,12 @@ fetch('message1.html')
 
               ${
                 liked
-                ? `<div class="liked-tag">❤️</div>`
-                : ``
+                ? `
+                  <div class="like-tag">
+                    ❤️
+                  </div>
+                `
+                : ''
               }
 
             </div>
@@ -316,13 +318,11 @@ fetch('message1.html')
         }
 
         <div class="meta">
-
           ${
             isEdited
             ? `<span class="edited">edited</span>`
             : ''
           }
-
         </div>
 
         <div class="time">
@@ -341,7 +341,7 @@ fetch('message1.html')
 
   }
 
-  // INITIAL RENDER
+  // INITIAL
   render();
 
   // SEARCH
