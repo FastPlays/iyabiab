@@ -158,6 +158,12 @@ body {
   margin-bottom: 4px;
 }
 
+/* BUBBLE */
+.bubble-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .bubble {
   max-width: 85%;
 
@@ -181,6 +187,26 @@ body {
   color: white;
 }
 
+/* REACTION */
+.reaction {
+  position: absolute;
+
+  right: -8px;
+  bottom: -8px;
+
+  background: white;
+
+  border-radius: 50%;
+
+  padding: 2px 5px;
+
+  font-size: 12px;
+
+  box-shadow:
+    0 2px 5px rgba(0,0,0,0.15);
+}
+
+/* META */
 .meta,
 .time {
   font-size: 11px;
