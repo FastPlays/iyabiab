@@ -132,8 +132,6 @@ body {
   max-width: 800px;
 
   margin: 0 auto;
-
-  scroll-behavior: auto;
 }
 
 /* MESSAGE */
@@ -160,6 +158,11 @@ body {
   margin-bottom: 4px;
 }
 
+.bubble-wrap {
+  position: relative;
+  display: inline-block;
+}
+
 .bubble {
   max-width: 85%;
 
@@ -181,6 +184,24 @@ body {
 .you .bubble {
   background: #8B0000;
   color: white;
+}
+
+/* LIKE TAG */
+.liked-tag {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+
+  background: white;
+
+  border-radius: 999px;
+
+  padding: 2px 6px;
+
+  font-size: 12px;
+
+  box-shadow:
+    0 2px 5px rgba(0,0,0,0.15);
 }
 
 .meta,
