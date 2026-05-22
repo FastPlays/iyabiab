@@ -82,7 +82,7 @@ const chat =
 const siteContent =
   document.getElementById("siteContent");
 
-// HIDE SITE UNTIL PASSWORD
+// HIDE SITE
 siteContent.style.visibility = "hidden";
 
 // PASSWORD
@@ -135,13 +135,22 @@ fetch('message1.html')
   function cleanText(text = "") {
 
     text = text
-      .replace("❤Khloe", "")
-      .replace("❤Rylen", "")
-      .replace("(edited)", "")
+
+      // REMOVE REACTION TAGS
+      .replace(/❤️\s*Khloe/gi, "")
+      .replace(/❤️\s*Rylen/gi, "")
+      .replace(/❤\s*Khloe/gi, "")
+      .replace(/❤\s*Rylen/gi, "")
+
+      // REMOVE EDITED
+      .replace(/\(edited\)/gi, "")
+
+      // CLEAN SPACES
       .replace(/\s+/g, " ")
+
       .trim();
 
-    // REEL LINKS
+    // REELS
     const reelMatch =
       text.match(
         /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
@@ -168,7 +177,6 @@ fetch('message1.html')
 
   }
 
-  // FINAL MESSAGE ARRAY
   const finalMessages = [];
 
   messages.forEach(msg => {
@@ -198,6 +206,23 @@ fetch('message1.html')
     const isEdited =
       rawText.includes("(edited)");
 
+    let likedBy = "";
+
+    // DETECT LIKES
+    if (/❤️\s*Khloe/i.test(rawText) ||
+        /❤\s*Khloe/i.test(rawText)) {
+
+      likedBy = "Khloe";
+
+    }
+
+    if (/❤️\s*Rylen/i.test(rawText) ||
+        /❤\s*Rylen/i.test(rawText)) {
+
+      likedBy = "Rylen";
+
+    }
+
     const text =
       cleanText(rawText);
 
@@ -211,7 +236,8 @@ fetch('message1.html')
       sender,
       time,
       text,
-      isEdited
+      isEdited,
+      likedBy
     };
 
     if (!existing) {
@@ -233,8 +259,7 @@ fetch('message1.html')
 
   });
 
-  // IMPORTANT:
-  // reverse message order
+  // REVERSE FOR INSTAGRAM STYLE
   map.forEach(value => {
 
     finalMessages.push(value);
@@ -252,7 +277,8 @@ fetch('message1.html')
       sender,
       time,
       text,
-      isEdited
+      isEdited,
+      likedBy
     }) => {
 
       const safeText =
@@ -289,12 +315,20 @@ fetch('message1.html')
           : ''
         }
 
+        ${
+          likedBy
+          ? `<div class="liked-tag">❤️</div>`
+          : ''
+        }
+
         <div class="meta">
+
           ${
             isEdited
             ? `<span class="edited">edited</span>`
             : ''
           }
+
         </div>
 
         <div class="time">
@@ -307,7 +341,6 @@ fetch('message1.html')
 
     });
 
-    // INSTANT BOTTOM POSITION
     chat.scrollTop =
       chat.scrollHeight;
 
