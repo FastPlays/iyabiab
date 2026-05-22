@@ -12,6 +12,7 @@
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
+
     <h2>K&R Memories</h2>
 
     <input
@@ -25,6 +26,7 @@
     </button>
 
     <p id="error"></p>
+
   </div>
 </div>
 
@@ -58,11 +60,13 @@
 
   <!-- SEARCH -->
   <div class="search-box">
+
     <input
       id="searchInput"
       type="text"
       placeholder="Search messages..."
     >
+
   </div>
 
   <!-- CHAT -->
@@ -87,11 +91,13 @@ function checkPassword() {
 
     setTimeout(() => {
 
-      const chat = document.getElementById("chat");
+      const chat =
+        document.getElementById("chat");
 
-      chat.scrollTop = chat.scrollHeight;
+      chat.scrollTop =
+        chat.scrollHeight;
 
-    }, 150);
+    }, 100);
 
   } else {
 
@@ -99,6 +105,7 @@ function checkPassword() {
       .innerText = "Wrong password";
 
   }
+
 }
 
 fetch('message1.html')
@@ -107,20 +114,27 @@ fetch('message1.html')
 
 .then(html => {
 
-  const parser = new DOMParser();
+  const parser =
+    new DOMParser();
 
   const doc =
-    parser.parseFromString(html, 'text/html');
+    parser.parseFromString(
+      html,
+      'text/html'
+    );
 
   const messages =
-    doc.querySelectorAll('div.pam');
+    Array.from(
+      doc.querySelectorAll('div.pam')
+    );
 
   const chat =
     document.getElementById('chat');
 
-  const map = new Map();
+  const map =
+    new Map();
 
-  // CLEAN MESSAGE TEXT
+  // CLEAN TEXT
   function cleanText(text = "") {
 
     text = text
@@ -130,7 +144,7 @@ fetch('message1.html')
       .replace(/\s+/g, " ")
       .trim();
 
-    // REELS
+    // REEL LINKS
     const reelMatch =
       text.match(
         /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
@@ -141,20 +155,25 @@ fetch('message1.html')
     }
 
     return text;
+
   }
 
   // REMOVE SYSTEM MESSAGES
   function isSystemMessage(text = "") {
 
-    const t = text.toLowerCase();
+    const t =
+      text.toLowerCase();
 
     return (
       t.includes("liked a message") ||
       t.includes("reacted")
     );
+
   }
 
-  // BUILD MESSAGE MAP
+  // BUILD MESSAGE ARRAY
+  const finalMessages = [];
+
   messages.forEach(msg => {
 
     const sender =
@@ -186,9 +205,10 @@ fetch('message1.html')
       cleanText(rawText);
 
     const key =
-      sender + "|" + time + "|" + rawText;
+      sender + "|" + time;
 
-    const existing = map.get(key);
+    const existing =
+      map.get(key);
 
     const data = {
       sender,
@@ -207,19 +227,31 @@ fetch('message1.html')
         isEdited &&
         !existing.isEdited
       ) {
+
         map.set(key, data);
+
       }
 
     }
 
   });
 
-  // RENDER CHAT
+  // IMPORTANT:
+  // reverse so newest = bottom
+  map.forEach(value => {
+
+    finalMessages.push(value);
+
+  });
+
+  finalMessages.reverse();
+
+  // RENDER
   function render(filter = "") {
 
     chat.innerHTML = "";
 
-    map.forEach(({
+    finalMessages.forEach(({
       sender,
       time,
       text,
