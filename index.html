@@ -39,6 +39,7 @@
 
 const chat = document.getElementById("chat");
 const siteContent = document.getElementById("siteContent");
+
 siteContent.style.visibility = "hidden";
 
 /* LOGIN */
@@ -93,7 +94,6 @@ fetch('message1.html')
 
   const latestMap = new Map();
 
-  /* ✅ FIX: proper dedupe system */
   messages.forEach(msg => {
 
     const sender = msg.querySelector('h2')?.innerText?.trim();
@@ -103,7 +103,21 @@ fetch('message1.html')
     if (!sender || !time) return;
 
     let rawText = textBlock ? textBlock.innerText.trim() : "";
-    if (isSystemMessage(rawText)) return;
+
+    if (isSystemMessage(rawText)) {
+      return;
+    }
+
+    /* ✅ FIX: detect reactions BEFORE cleaning */
+    let likedBy = "";
+
+    if (/❤️\s*Khloe/i.test(rawText) || /❤\s*Khloe/i.test(rawText)) {
+      likedBy = "Khloe";
+    }
+
+    if (/❤️\s*Rylen/i.test(rawText) || /❤\s*Rylen/i.test(rawText)) {
+      likedBy = "Rylen";
+    }
 
     const isEdited = rawText.includes("(edited)");
     const text = cleanText(rawText);
@@ -112,26 +126,40 @@ fetch('message1.html')
 
     const existing = latestMap.get(key);
 
-    /* KEEP ONLY MOST RECENT VERSION */
     if (!existing) {
-      latestMap.set(key, { sender, time, text, isEdited });
+
+      latestMap.set(key, {
+        sender,
+        time,
+        text,
+        isEdited,
+        likedBy
+      });
+
     } else {
-      if (isEdited) {
-        latestMap.set(key, { sender, time, text, isEdited: true });
-      }
+
+      /* keep latest version + preserve likes */
+      latestMap.set(key, {
+        sender,
+        time,
+        text: isEdited ? text : existing.text,
+        isEdited: existing.isEdited || isEdited,
+        likedBy: likedBy || existing.likedBy
+      });
+
     }
+
   });
 
   const finalMessages = Array.from(latestMap.values());
 
-  /* keep chronological order */
   finalMessages.reverse();
 
   function render(filter = "") {
 
     chat.innerHTML = "";
 
-    finalMessages.forEach(({ sender, time, text, isEdited }) => {
+    finalMessages.forEach(({ sender, time, text, isEdited, likedBy }) => {
 
       const safeText = (text || "").toLowerCase();
       const safeSender = (sender || "").toLowerCase();
@@ -147,10 +175,15 @@ fetch('message1.html')
 
       div.innerHTML = `
         <div class="name">${sender}</div>
+
         ${text ? `<div class="bubble">${text}</div>` : ""}
+
+        ${likedBy ? `<div class="liked">❤️ ${likedBy}</div>` : ""}
+
         <div class="meta">
           ${isEdited ? `<span class="edited">edited</span>` : ""}
         </div>
+
         <div class="time">${time}</div>
       `;
 
