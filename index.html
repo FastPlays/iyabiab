@@ -82,7 +82,7 @@ const chat =
 const siteContent =
   document.getElementById("siteContent");
 
-// HIDE SITE UNTIL PASSWORD
+// HIDE SITE BEFORE PASSWORD
 siteContent.style.visibility = "hidden";
 
 // PASSWORD
@@ -128,32 +128,10 @@ fetch('message1.html')
       doc.querySelectorAll('div.pam')
     );
 
-  const map =
-    new Map();
-
-  // CLEAN TEXT
-  function cleanText(text = "") {
-
-    text = text
-      .replace("❤Khloe", "")
-      .replace("❤Rylen", "")
-      .replace("(edited)", "")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    // REEL LINKS
-    const reelMatch =
-      text.match(
-        /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
-      );
-
-    if (reelMatch) {
-      return reelMatch[0];
-    }
-
-    return text;
-
-  }
+  // IMPORTANT:
+  // reverse because Instagram export
+  // is newest -> oldest
+  messages.reverse();
 
   // REMOVE SYSTEM MESSAGES
   function isSystemMessage(text = "") {
@@ -168,8 +146,24 @@ fetch('message1.html')
 
   }
 
-  // FINAL MESSAGE ARRAY
+  // CLEAN TEXT
+  function cleanText(text = "") {
+
+    return text
+      .replace(/❤Khloe/g, "")
+      .replace(/❤Rylen/g, "")
+      .replace(/❤️Khloe/g, "")
+      .replace(/❤️Rylen/g, "")
+      .replace(/\(edited\)/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  }
+
   const finalMessages = [];
+
+  const editedTracker =
+    new Map();
 
   messages.forEach(msg => {
 
@@ -195,53 +189,70 @@ fetch('message1.html')
 
     if (isSystemMessage(rawText)) return;
 
+    // DETECT LIKE
+    const liked =
+      rawText.includes("❤Khloe") ||
+      rawText.includes("❤Rylen") ||
+      rawText.includes("❤️Khloe") ||
+      rawText.includes("❤️Rylen");
+
     const isEdited =
       rawText.includes("(edited)");
 
-    const text =
+    const cleanedText =
       cleanText(rawText);
 
-    const key =
+    // REELS ONLY SHOW URL
+    const reelMatch =
+      cleanedText.match(
+        /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
+      );
+
+    const finalText =
+      reelMatch
+      ? reelMatch[0]
+      : cleanedText;
+
+    // IMPORTANT:
+    // identify original + edited copies
+    const editKey =
       sender + "|" + time;
 
-    const existing =
-      map.get(key);
+    // if edited version exists,
+    // remove older unedited one
+    if (isEdited) {
 
-    const data = {
-      sender,
-      time,
-      text,
-      isEdited
-    };
+      editedTracker.set(editKey, true);
 
-    if (!existing) {
+      // remove old copy
+      const existingIndex =
+        finalMessages.findIndex(m =>
+          m.sender === sender &&
+          m.time === time
+        );
 
-      map.set(key, data);
+      if (existingIndex !== -1) {
+        finalMessages.splice(existingIndex, 1);
+      }
 
     } else {
 
-      if (
-        isEdited &&
-        !existing.isEdited
-      ) {
-
-        map.set(key, data);
-
+      // skip if edited already exists
+      if (editedTracker.has(editKey)) {
+        return;
       }
 
     }
 
+    finalMessages.push({
+      sender,
+      time,
+      text: finalText,
+      liked,
+      isEdited
+    });
+
   });
-
-  // IMPORTANT:
-  // reverse message order
-  map.forEach(value => {
-
-    finalMessages.push(value);
-
-  });
-
-  finalMessages.reverse();
 
   // RENDER
   function render(filter = "") {
@@ -252,6 +263,7 @@ fetch('message1.html')
       sender,
       time,
       text,
+      liked,
       isEdited
     }) => {
 
@@ -285,16 +297,32 @@ fetch('message1.html')
 
         ${
           text
-          ? `<div class="bubble">${text}</div>`
+          ? `
+            <div class="bubble-wrap">
+
+              <div class="bubble">
+                ${text}
+              </div>
+
+              ${
+                liked
+                ? `<div class="liked-tag">❤️</div>`
+                : ``
+              }
+
+            </div>
+          `
           : ''
         }
 
         <div class="meta">
+
           ${
             isEdited
             ? `<span class="edited">edited</span>`
             : ''
           }
+
         </div>
 
         <div class="time">
@@ -307,7 +335,7 @@ fetch('message1.html')
 
     });
 
-    // INSTANT BOTTOM POSITION
+    // START AT BOTTOM
     chat.scrollTop =
       chat.scrollHeight;
 
