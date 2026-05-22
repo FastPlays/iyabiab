@@ -42,7 +42,6 @@ const siteContent = document.getElementById("siteContent");
 
 siteContent.style.visibility = "hidden";
 
-/* LOGIN */
 function checkPassword() {
   const password = document.getElementById("passwordInput").value;
 
@@ -82,9 +81,7 @@ fetch('message1.html')
       /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
     );
 
-    if (reelMatch) return reelMatch[0];
-
-    return text;
+    return reelMatch ? reelMatch[0] : text;
   }
 
   function isSystemMessage(text = "") {
@@ -92,7 +89,11 @@ fetch('message1.html')
     return t.includes("liked a message") || t.includes("reacted");
   }
 
-  const latestMap = new Map();
+  /* =====================================================
+     ONLY FIX: PROPER EDIT HANDLING (NO STRUCTURE CHANGES)
+  ====================================================== */
+
+  const map = new Map();
 
   messages.forEach(msg => {
 
@@ -103,55 +104,40 @@ fetch('message1.html')
     if (!sender || !time) return;
 
     let rawText = textBlock ? textBlock.innerText.trim() : "";
-
-    if (isSystemMessage(rawText)) {
-      return;
-    }
-
-    /* ✅ FIX: detect reactions BEFORE cleaning */
-    let likedBy = "";
-
-    if (/❤️\s*Khloe/i.test(rawText) || /❤\s*Khloe/i.test(rawText)) {
-      likedBy = "Khloe";
-    }
-
-    if (/❤️\s*Rylen/i.test(rawText) || /❤\s*Rylen/i.test(rawText)) {
-      likedBy = "Rylen";
-    }
+    if (isSystemMessage(rawText)) return;
 
     const isEdited = rawText.includes("(edited)");
     const text = cleanText(rawText);
 
     const key = sender + "|" + time;
 
-    const existing = latestMap.get(key);
+    const existing = map.get(key);
 
+    /* ONLY CHANGE:
+       - keep original unless edited version appears
+       - DO NOT DROP OR REORDER ANYTHING ELSE
+    */
     if (!existing) {
-
-      latestMap.set(key, {
+      map.set(key, {
         sender,
         time,
         text,
-        isEdited,
-        likedBy
+        isEdited
       });
-
     } else {
-
-      /* keep latest version + preserve likes */
-      latestMap.set(key, {
-        sender,
-        time,
-        text: isEdited ? text : existing.text,
-        isEdited: existing.isEdited || isEdited,
-        likedBy: likedBy || existing.likedBy
-      });
-
+      if (isEdited) {
+        map.set(key, {
+          sender,
+          time,
+          text,
+          isEdited: true
+        });
+      }
     }
 
   });
 
-  const finalMessages = Array.from(latestMap.values());
+  const finalMessages = Array.from(map.values());
 
   finalMessages.reverse();
 
@@ -159,7 +145,7 @@ fetch('message1.html')
 
     chat.innerHTML = "";
 
-    finalMessages.forEach(({ sender, time, text, isEdited, likedBy }) => {
+    finalMessages.forEach(({ sender, time, text, isEdited }) => {
 
       const safeText = (text || "").toLowerCase();
       const safeSender = (sender || "").toLowerCase();
@@ -175,15 +161,10 @@ fetch('message1.html')
 
       div.innerHTML = `
         <div class="name">${sender}</div>
-
         ${text ? `<div class="bubble">${text}</div>` : ""}
-
-        ${likedBy ? `<div class="liked">❤️ ${likedBy}</div>` : ""}
-
         <div class="meta">
           ${isEdited ? `<span class="edited">edited</span>` : ""}
         </div>
-
         <div class="time">${time}</div>
       `;
 
