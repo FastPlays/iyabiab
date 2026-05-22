@@ -31,7 +31,7 @@
 </div>
 
 <!-- SITE -->
-<div id="siteContent" style="display:none;">
+<div id="siteContent">
 
   <!-- HEADER -->
   <div class="top">
@@ -76,6 +76,16 @@
 
 <script>
 
+const chat =
+  document.getElementById("chat");
+
+const siteContent =
+  document.getElementById("siteContent");
+
+// HIDE SITE UNTIL PASSWORD
+siteContent.style.visibility = "hidden";
+
+// PASSWORD
 function checkPassword() {
 
   const password =
@@ -86,18 +96,7 @@ function checkPassword() {
     document.getElementById("loginScreen")
       .style.display = "none";
 
-    document.getElementById("siteContent")
-      .style.display = "block";
-
-    setTimeout(() => {
-
-      const chat =
-        document.getElementById("chat");
-
-      chat.scrollTop =
-        chat.scrollHeight;
-
-    }, 100);
+    siteContent.style.visibility = "visible";
 
   } else {
 
@@ -108,6 +107,7 @@ function checkPassword() {
 
 }
 
+// LOAD CHAT
 fetch('message1.html')
 
 .then(res => res.text())
@@ -127,9 +127,6 @@ fetch('message1.html')
     Array.from(
       doc.querySelectorAll('div.pam')
     );
-
-  const chat =
-    document.getElementById('chat');
 
   const map =
     new Map();
@@ -171,7 +168,7 @@ fetch('message1.html')
 
   }
 
-  // BUILD MESSAGE ARRAY
+  // FINAL MESSAGE ARRAY
   const finalMessages = [];
 
   messages.forEach(msg => {
@@ -237,7 +234,7 @@ fetch('message1.html')
   });
 
   // IMPORTANT:
-  // reverse so newest = bottom
+  // reverse message order
   map.forEach(value => {
 
     finalMessages.push(value);
@@ -310,24 +307,14 @@ fetch('message1.html')
 
     });
 
-    requestAnimationFrame(() => {
-
-      chat.scrollTop =
-        chat.scrollHeight;
-
-    });
+    // INSTANT BOTTOM POSITION
+    chat.scrollTop =
+      chat.scrollHeight;
 
   }
 
   // INITIAL RENDER
   render();
-
-  setTimeout(() => {
-
-    chat.scrollTop =
-      chat.scrollHeight;
-
-  }, 100);
 
   // SEARCH
   document
