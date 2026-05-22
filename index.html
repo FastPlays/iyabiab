@@ -12,366 +12,163 @@
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
-
     <h2>K&R Memories</h2>
-
-    <input
-      type="password"
-      id="passwordInput"
-      placeholder="Enter password"
-    >
-
-    <button onclick="checkPassword()">
-      Enter
-    </button>
-
+    <input type="password" id="passwordInput" placeholder="Enter password">
+    <button onclick="checkPassword()">Enter</button>
     <p id="error"></p>
-
   </div>
 </div>
 
 <!-- SITE -->
 <div id="siteContent">
 
-  <!-- HEADER -->
   <div class="top">
-
-    <a
-      href="letter1.pdf"
-      target="_blank"
-      class="side-btn left"
-    >
-      💌
-    </a>
+    <a href="letter1.pdf" target="_blank" class="side-btn left">💌</a>
 
     <h1>Khloe ❤️ Rylen</h1>
 
-    <a
-      href="letter2.pdf"
-      target="_blank"
-      class="side-btn right"
-    >
-      🌹
-    </a>
+    <a href="letter2.pdf" target="_blank" class="side-btn right">🌹</a>
 
     <p>Instagram Memories</p>
-
   </div>
 
-  <!-- SEARCH -->
   <div class="search-box">
-
-    <input
-      id="searchInput"
-      type="text"
-      placeholder="Search messages..."
-    >
-
+    <input id="searchInput" type="text" placeholder="Search messages...">
   </div>
 
-  <!-- CHAT -->
   <div id="chat"></div>
 
 </div>
 
 <script>
 
-const chat =
-  document.getElementById("chat");
+const chat = document.getElementById("chat");
+const siteContent = document.getElementById("siteContent");
 
-const siteContent =
-  document.getElementById("siteContent");
-
-// HIDE SITE UNTIL PASSWORD
 siteContent.style.visibility = "hidden";
 
-// PASSWORD
 function checkPassword() {
+  const password = document.getElementById("passwordInput").value;
 
-  const password =
-    document.getElementById("passwordInput").value;
-
-  if(password === "iloveyou") {
-
-    document.getElementById("loginScreen")
-      .style.display = "none";
-
+  if (password === "iloveyou") {
+    document.getElementById("loginScreen").style.display = "none";
     siteContent.style.visibility = "visible";
-
   } else {
-
-    document.getElementById("error")
-      .innerText = "Wrong password";
-
+    document.getElementById("error").innerText = "Wrong password";
   }
-
 }
 
-// LOAD CHAT
 fetch('message1.html')
-
 .then(res => res.text())
-
 .then(html => {
 
-  const parser =
-    new DOMParser();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
 
-  const doc =
-    parser.parseFromString(
-      html,
-      'text/html'
-    );
+  const messages = Array.from(doc.querySelectorAll('div.pam'));
 
-  const messages =
-    Array.from(
-      doc.querySelectorAll('div.pam')
-    );
+  // 🔥 FIXED STORAGE (prevents duplicates)
+  const messageMap = new Map();
 
-  // CLEAN MESSAGE TEXT
   function cleanText(text = "") {
-
-    text = text
-
-      // REMOVE REACTION TEXT
+    return text
+      .replace(/\(edited\)/gi, "")
       .replace(/❤️\s*Khloe/gi, "")
       .replace(/❤️\s*Rylen/gi, "")
       .replace(/❤\s*Khloe/gi, "")
       .replace(/❤\s*Rylen/gi, "")
-
-      // REMOVE EDITED
-      .replace(/\(edited\)/gi, "")
-
-      // CLEAN SPACES
       .replace(/\s+/g, " ")
-
       .trim();
-
-    // REELS ONLY SHOW LINK
-    const reelMatch =
-      text.match(
-        /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
-      );
-
-    if (reelMatch) {
-      return reelMatch[0];
-    }
-
-    return text;
-
   }
 
-  // REMOVE INSTAGRAM SYSTEM MESSAGES
   function isSystemMessage(text = "") {
-
-    const t =
-      text.toLowerCase();
-
-    return (
-      t.includes("liked a message") ||
-      t.includes("reacted")
-    );
-
+    const t = text.toLowerCase();
+    return t.includes("liked a message") || t.includes("reacted");
   }
-
-  // RAW MESSAGES
-  const rawMessages = [];
 
   messages.forEach(msg => {
 
-    const sender =
-      msg.querySelector('h2')
-      ?.innerText
-      ?.trim();
-
-    const time =
-      msg.querySelector('div._3-94._a6-o')
-      ?.innerText
-      ?.trim();
-
-    const textBlock =
-      msg.querySelector('div._a6-p');
+    const sender = msg.querySelector('h2')?.innerText?.trim();
+    const time = msg.querySelector('div._3-94._a6-o')?.innerText?.trim();
+    const textBlock = msg.querySelector('div._a6-p');
 
     if (!sender || !time) return;
 
-    let rawText =
-      textBlock
-      ? textBlock.innerText.trim()
-      : "";
+    let rawText = textBlock ? textBlock.innerText.trim() : "";
 
-    // REMOVE SYSTEM MESSAGES
     if (isSystemMessage(rawText)) return;
 
-    const isEdited =
-      rawText.includes("(edited)");
+    const isEdited = rawText.includes("(edited)");
 
-    let likedBy = "";
+    const cleaned = cleanText(rawText);
 
-    // DETECT REACTIONS
-    if (
-      /❤️\s*Khloe/i.test(rawText) ||
-      /❤\s*Khloe/i.test(rawText)
-    ) {
-      likedBy = "Khloe";
-    }
+    const key = sender + "|" + time;
 
-    if (
-      /❤️\s*Rylen/i.test(rawText) ||
-      /❤\s*Rylen/i.test(rawText)
-    ) {
-      likedBy = "Rylen";
-    }
+    const existing = messageMap.get(key);
 
-    const text =
-      cleanText(rawText);
-
-    rawMessages.push({
+    const data = {
       sender,
       time,
-      text,
-      isEdited,
-      likedBy
-    });
+      text: cleaned,
+      isEdited
+    };
+
+    // ✅ IMPORTANT FIX:
+    // ALWAYS prefer edited version and overwrite old one
+    if (!existing) {
+      messageMap.set(key, data);
+    } else {
+      if (isEdited) {
+        messageMap.set(key, data);
+      }
+    }
 
   });
 
-  // REMOVE OLD VERSION OF EDITED MESSAGES
-  const finalMessages = [];
+  const finalMessages = Array.from(messageMap.values());
 
-  for (let i = 0; i < rawMessages.length; i++) {
-
-    const msg =
-      rawMessages[i];
-
-    // IF MESSAGE IS NOT EDITED
-    if (!msg.isEdited) {
-
-      // CHECK NEXT MESSAGE
-      const next =
-        rawMessages[i + 1];
-
-      // IF NEXT MESSAGE IS EDITED
-      // BY SAME PERSON
-      // REMOVE OLD VERSION
-      if (
-        next &&
-        next.isEdited &&
-        next.sender === msg.sender
-      ) {
-
-        continue;
-
-      }
-
-    }
-
-    finalMessages.push(msg);
-
-  }
-
-  // INSTAGRAM ORDER
+  // Instagram order (old → new, newest bottom)
   finalMessages.reverse();
 
-  // RENDER CHAT
   function render(filter = "") {
 
     chat.innerHTML = "";
 
-    finalMessages.forEach(({
-      sender,
-      time,
-      text,
-      isEdited,
-      likedBy
-    }) => {
+    finalMessages.forEach(({ sender, time, text, isEdited }) => {
 
-      const safeText =
-        (text || "").toLowerCase();
+      const match =
+        !filter ||
+        text.toLowerCase().includes(filter.toLowerCase()) ||
+        sender.toLowerCase().includes(filter.toLowerCase());
 
-      const safeSender =
-        (sender || "").toLowerCase();
+      if (!match) return;
 
-      // SEARCH FILTER
-      if (
-        filter &&
-        !safeText.includes(filter.toLowerCase()) &&
-        !safeSender.includes(filter.toLowerCase())
-      ) {
-        return;
-      }
+      const div = document.createElement("div");
 
-      const bubble =
-        document.createElement('div');
+      div.className = sender === "Rylen" ? "message you" : "message her";
 
-      bubble.className =
-        sender === 'Rylen'
-        ? 'message you'
-        : 'message her';
-
-      bubble.innerHTML = `
-
-        <div class="name">
-          ${sender}
-        </div>
-
-        ${
-          text
-          ? `
-            <div class="bubble">
-              ${text}
-            </div>
-          `
-          : ''
-        }
-
-        ${
-          likedBy
-          ? `
-            <div class="liked">
-              ❤️${likedBy}
-            </div>
-          `
-          : ''
-        }
+      div.innerHTML = `
+        <div class="name">${sender}</div>
+        <div class="bubble">${text}</div>
 
         <div class="meta">
-
-          ${
-            isEdited
-            ? `<span class="edited">edited</span>`
-            : ''
-          }
-
+          ${isEdited ? `<span class="edited">edited</span>` : ""}
         </div>
 
-        <div class="time">
-          ${time}
-        </div>
-
+        <div class="time">${time}</div>
       `;
 
-      chat.appendChild(bubble);
-
+      chat.appendChild(div);
     });
 
-    // START AT BOTTOM
-    chat.scrollTop =
-      chat.scrollHeight;
-
+    chat.scrollTop = chat.scrollHeight;
   }
 
-  // INITIAL RENDER
   render();
 
-  // SEARCH
-  document
-    .getElementById("searchInput")
-
-    .addEventListener("input", (e) => {
-
-      render(e.target.value);
-
-    });
+  document.getElementById("searchInput").addEventListener("input", e => {
+    render(e.target.value);
+  });
 
 });
 
