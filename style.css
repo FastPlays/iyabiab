@@ -15,7 +15,6 @@ body {
 /* HEADER */
 .top {
   position: fixed;
-
   top: 0;
   left: 0;
   right: 0;
@@ -133,6 +132,8 @@ body {
   max-width: 800px;
 
   margin: 0 auto;
+
+  scroll-behavior: auto;
 }
 
 /* MESSAGE */
@@ -140,7 +141,7 @@ body {
   display: flex;
   flex-direction: column;
 
-  margin: 14px 0;
+  margin: 10px 0;
 }
 
 .you {
@@ -153,17 +154,12 @@ body {
 
 .name {
   font-size: 11px;
+
   opacity: 0.6;
+
   margin-bottom: 4px;
 }
 
-/* BUBBLE WRAP */
-.bubble-wrap {
-  position: relative;
-  display: inline-block;
-}
-
-/* MESSAGE BUBBLE */
 .bubble {
   max-width: 85%;
 
@@ -187,51 +183,15 @@ body {
   color: white;
 }
 
-/* REACTION */
-.liked {
-  position: absolute;
-
-  bottom: -12px;
-  right: -8px;
-
-  background: #ff2d75;
-
-  color: white;
-
-  border-radius: 999px;
-
-  padding: 4px 8px;
-
-  font-size: 11px;
-  font-weight: 600;
-
-  border: 2px solid white;
-
-  box-shadow:
-    0 2px 5px rgba(0,0,0,0.15);
-}
-
-/* META */
-.meta {
-  font-size: 12px;
-
-  margin-top: 8px;
-
-  opacity: 0.6;
-
-  display: flex;
-  gap: 8px;
-}
-
-.edited {
-  color: gray;
-  font-style: italic;
-}
-
+.meta,
 .time {
   font-size: 11px;
   opacity: 0.6;
   margin-top: 4px;
+}
+
+.edited {
+  font-style: italic;
 }
 
 /* LOGIN */
