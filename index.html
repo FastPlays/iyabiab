@@ -9,122 +9,234 @@
 
 <body>
 
+<!-- LOGIN -->
 <div id="loginScreen">
+
   <div class="login-box">
+
     <h2>K&R Memories</h2>
-    <input type="password" id="passwordInput" placeholder="Enter password">
-    <button onclick="checkPassword()">Enter</button>
+
+    <input
+      type="password"
+      id="passwordInput"
+      placeholder="Enter password"
+    >
+
+    <button onclick="checkPassword()">
+      Enter
+    </button>
+
     <p id="error"></p>
+
   </div>
+
 </div>
 
+<!-- SITE -->
 <div id="siteContent">
 
+  <!-- HEADER -->
   <div class="top">
-    <a href="document1.pdf" target="_blank" class="side-btn left">💌</a>
+
+    <a
+      href="document1.pdf"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="side-btn left"
+    >
+      💌
+    </a>
+
     <h1>Khloe ❤️ Rylen</h1>
-    <a href="document2.pdf" target="_blank" class="side-btn right">🌹</a>
+
+    <a
+      href="document2.pdf"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="side-btn right"
+    >
+      🌹
+    </a>
+
     <p>Instagram Memories</p>
+
   </div>
 
+  <!-- SEARCH -->
   <div class="search-box">
-    <input id="searchInput" type="text" placeholder="Search messages...">
+
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="Search messages..."
+    >
+
   </div>
 
+  <!-- CHAT -->
   <div id="chat"></div>
 
 </div>
 
 <script>
 
-const chat = document.getElementById("chat");
-const siteContent = document.getElementById("siteContent");
+const chat =
+  document.getElementById("chat");
+
+const siteContent =
+  document.getElementById("siteContent");
 
 siteContent.style.visibility = "hidden";
 
 /* LOGIN */
 function checkPassword() {
-  const password = document.getElementById("passwordInput").value;
+
+  const password =
+    document.getElementById("passwordInput").value;
 
   if (password === "iloveyou") {
-    document.getElementById("loginScreen").style.display = "none";
+
+    document.getElementById("loginScreen")
+      .style.display = "none";
+
     siteContent.style.visibility = "visible";
 
-    setTimeout(() => {
-      chat.scrollTop = chat.scrollHeight;
-    }, 100);
-
   } else {
-    document.getElementById("error").innerText = "Wrong password";
+
+    document.getElementById("error")
+      .innerText = "Wrong password";
+
   }
+
 }
 
-fetch('message1.html')
+/* LOAD INSTAGRAM HTML */
+fetch("message1.html")
+
 .then(res => res.text())
+
 .then(html => {
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-  const messages = Array.from(doc.querySelectorAll('div.pam'));
+  const parser =
+    new DOMParser();
 
+  const doc =
+    parser.parseFromString(
+      html,
+      "text/html"
+    );
+
+  const rawMessages =
+    Array.from(
+      doc.querySelectorAll("div.pam")
+    );
+
+  const latestMap =
+    new Map();
+
+  /* CLEAN MESSAGE TEXT */
   function cleanText(text = "") {
 
     text = text
-      .replace(/❤️\s*Khloe/gi, "")
-      .replace(/❤️\s*Rylen/gi, "")
-      .replace(/❤\s*Khloe/gi, "")
-      .replace(/❤\s*Rylen/gi, "")
+
+      .replace(/❤️\s*Khloe\s*$/gi, "")
+      .replace(/❤️\s*Rylen\s*$/gi, "")
+      .replace(/❤\s*Khloe\s*$/gi, "")
+      .replace(/❤\s*Rylen\s*$/gi, "")
+
       .replace(/\(edited\)/gi, "")
+
       .replace(/\s+/g, " ")
+
       .trim();
 
-    const reelMatch = text.match(
-      /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
-    );
+    /* REELS */
+    const reelMatch =
+      text.match(
+        /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
+      );
 
-    if (reelMatch) return reelMatch[0];
+    if (reelMatch) {
+      return reelMatch[0];
+    }
 
     return text;
+
   }
 
+  /* REMOVE SYSTEM MESSAGES */
   function isSystemMessage(text = "") {
-    const t = text.toLowerCase();
-    return t.includes("liked a message") || t.includes("reacted");
+
+    const t =
+      text.toLowerCase();
+
+    return (
+      t.includes("liked a message") ||
+      t.includes("reacted")
+    );
+
   }
 
-  const latestMap = new Map();
+  /* PARSE MESSAGES */
+  rawMessages.forEach(msg => {
 
-  messages.forEach(msg => {
+    const sender =
+      msg.querySelector("h2")
+      ?.innerText
+      ?.trim();
 
-    const sender = msg.querySelector('h2')?.innerText?.trim();
-    const time = msg.querySelector('div._3-94._a6-o')?.innerText?.trim();
-    const textBlock = msg.querySelector('div._a6-p');
+    const time =
+      msg.querySelector("div._3-94._a6-o")
+      ?.innerText
+      ?.trim();
+
+    const textBlock =
+      msg.querySelector("div._a6-p");
 
     if (!sender || !time) return;
 
-    let rawText = textBlock ? textBlock.innerText.trim() : "";
+    let rawText =
+      textBlock
+      ? textBlock.innerText.trim()
+      : "";
 
     if (isSystemMessage(rawText)) {
       return;
     }
 
-    /* ✅ FIX: detect reactions BEFORE cleaning */
+    /* DETECT REACTIONS */
     let likedBy = "";
 
-    if (/❤️\s*Khloe/i.test(rawText) || /❤\s*Khloe/i.test(rawText)) {
+    if (
+      /❤️\s*Khloe\s*$/i.test(rawText) ||
+      /❤\s*Khloe\s*$/i.test(rawText)
+    ) {
       likedBy = "Khloe";
     }
 
-    if (/❤️\s*Rylen/i.test(rawText) || /❤\s*Rylen/i.test(rawText)) {
+    if (
+      /❤️\s*Rylen\s*$/i.test(rawText) ||
+      /❤\s*Rylen\s*$/i.test(rawText)
+    ) {
       likedBy = "Rylen";
     }
 
-    const isEdited = rawText.includes("(edited)");
-    const text = cleanText(rawText);
+    const isEdited =
+      rawText.includes("(edited)");
 
-    const key = sender + "|" + time;
+    const text =
+      cleanText(rawText);
 
-    const existing = latestMap.get(key);
+    /* BETTER UNIQUE KEY */
+    const key =
+      sender +
+      "|" +
+      time +
+      "|" +
+      rawText.slice(0, 40);
+
+    const existing =
+      latestMap.get(key);
 
     if (!existing) {
 
@@ -138,65 +250,179 @@ fetch('message1.html')
 
     } else {
 
-      /* keep latest version + preserve likes */
       latestMap.set(key, {
+
         sender,
+
         time,
-        text: isEdited ? text : existing.text,
-        isEdited: existing.isEdited || isEdited,
-        likedBy: likedBy || existing.likedBy
+
+        text:
+          isEdited
+          ? text
+          : existing.text,
+
+        isEdited:
+          existing.isEdited ||
+          isEdited,
+
+        likedBy:
+          likedBy ||
+          existing.likedBy
+
       });
 
     }
 
   });
 
-  const finalMessages = Array.from(latestMap.values());
+  /* FINAL ORDER */
+  const finalMessages =
+    Array.from(
+      latestMap.values()
+    ).reverse();
 
-  finalMessages.reverse();
+  /* DATE SEPARATORS */
+  function getDateLabel(timeText = "") {
 
+    const date =
+      new Date(timeText);
+
+    if (isNaN(date)) return "";
+
+    return date.toLocaleDateString(
+      "en-US",
+      {
+        year: "numeric",
+        month: "long"
+      }
+    );
+
+  }
+
+  /* RENDER */
   function render(filter = "") {
 
     chat.innerHTML = "";
 
-    finalMessages.forEach(({ sender, time, text, isEdited, likedBy }) => {
+    let lastDate = "";
 
-      const safeText = (text || "").toLowerCase();
-      const safeSender = (sender || "").toLowerCase();
+    finalMessages.forEach(({
+      sender,
+      time,
+      text,
+      isEdited,
+      likedBy
+    }) => {
+
+      const safeText =
+        (text || "").toLowerCase();
+
+      const safeSender =
+        (sender || "").toLowerCase();
 
       if (
         filter &&
         !safeText.includes(filter.toLowerCase()) &&
         !safeSender.includes(filter.toLowerCase())
-      ) return;
+      ) {
+        return;
+      }
 
-      const div = document.createElement("div");
-      div.className = sender === "Rylen" ? "message you" : "message her";
+      /* DATE SEPARATOR */
+      const currentDate =
+        getDateLabel(time);
+
+      if (
+        currentDate &&
+        currentDate !== lastDate
+      ) {
+
+        const divider =
+          document.createElement("div");
+
+        divider.className =
+          "date-divider";
+
+        divider.innerHTML =
+          `<span>${currentDate}</span>`;
+
+        chat.appendChild(divider);
+
+        lastDate = currentDate;
+
+      }
+
+      /* MESSAGE */
+      const div =
+        document.createElement("div");
+
+      div.className =
+        sender === "Rylen"
+        ? "message you"
+        : "message her";
 
       div.innerHTML = `
-        <div class="name">${sender}</div>
 
-        ${text ? `<div class="bubble">${text}</div>` : ""}
-
-        ${likedBy ? `<div class="liked">❤️ ${likedBy}</div>` : ""}
-
-        <div class="meta">
-          ${isEdited ? `<span class="edited">edited</span>` : ""}
+        <div class="name">
+          ${sender}
         </div>
 
-        <div class="time">${time}</div>
+        ${
+          text
+          ? `<div class="bubble">${text}</div>`
+          : ""
+        }
+
+        ${
+          likedBy
+          ? `<div class="liked">❤️ ${likedBy}</div>`
+          : ""
+        }
+
+        ${
+          isEdited
+          ? `
+          <div class="meta">
+            <span class="edited">
+              edited
+            </span>
+          </div>
+          `
+          : ""
+        }
+
+        <div class="time">
+          ${time}
+        </div>
+
       `;
 
       chat.appendChild(div);
+
     });
 
-    chat.scrollTop = chat.scrollHeight;
+    /* ONLY AUTO SCROLL IF NOT SEARCHING */
+    if (!filter) {
+
+      chat.scrollTop =
+        chat.scrollHeight;
+
+    }
+
   }
 
+  /* INITIAL RENDER */
   render();
 
-  document.getElementById("searchInput")
-    .addEventListener("input", e => render(e.target.value));
+  /* SEARCH */
+  document
+    .getElementById("searchInput")
+
+    .addEventListener("input", e => {
+
+      render(e.target.value);
+
+    });
 
 });
 
