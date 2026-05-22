@@ -160,6 +160,13 @@ body {
   margin-bottom: 4px;
 }
 
+/* BUBBLE WRAP */
+.bubble-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+/* MESSAGE BUBBLE */
 .bubble {
   max-width: 85%;
 
@@ -181,6 +188,17 @@ body {
 .you .bubble {
   background: #8B0000;
   color: white;
+}
+
+/* ORIGINAL LIKE STYLE */
+.liked {
+  font-size: 12px;
+
+  margin-top: 4px;
+
+  color: #e1306c;
+
+  font-weight: 600;
 }
 
 .meta,
