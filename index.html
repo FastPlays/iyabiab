@@ -82,7 +82,7 @@ const chat =
 const siteContent =
   document.getElementById("siteContent");
 
-// HIDE SITE
+// HIDE SITE UNTIL PASSWORD
 siteContent.style.visibility = "hidden";
 
 // PASSWORD
@@ -128,7 +128,7 @@ fetch('message1.html')
       doc.querySelectorAll('div.pam')
     );
 
-  // CLEAN TEXT
+  // CLEAN MESSAGE TEXT
   function cleanText(text = "") {
 
     text = text
@@ -142,12 +142,12 @@ fetch('message1.html')
       // REMOVE EDITED
       .replace(/\(edited\)/gi, "")
 
-      // CLEAN SPACING
+      // CLEAN SPACES
       .replace(/\s+/g, " ")
 
       .trim();
 
-    // REELS
+    // REELS ONLY SHOW LINK
     const reelMatch =
       text.match(
         /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
@@ -161,7 +161,7 @@ fetch('message1.html')
 
   }
 
-  // REMOVE SYSTEM MESSAGES
+  // REMOVE INSTAGRAM SYSTEM MESSAGES
   function isSystemMessage(text = "") {
 
     const t =
@@ -174,8 +174,7 @@ fetch('message1.html')
 
   }
 
-  // STEP 1:
-  // BUILD RAW ARRAY
+  // RAW MESSAGES
   const rawMessages = [];
 
   messages.forEach(msg => {
@@ -200,6 +199,7 @@ fetch('message1.html')
       ? textBlock.innerText.trim()
       : "";
 
+    // REMOVE SYSTEM MESSAGES
     if (isSystemMessage(rawText)) return;
 
     const isEdited =
@@ -207,7 +207,7 @@ fetch('message1.html')
 
     let likedBy = "";
 
-    // REACTION DETECTION
+    // DETECT REACTIONS
     if (
       /❤️\s*Khloe/i.test(rawText) ||
       /❤\s*Khloe/i.test(rawText)
@@ -235,63 +235,44 @@ fetch('message1.html')
 
   });
 
-  // STEP 2:
-  // REMOVE ORIGINAL VERSION
+  // REMOVE OLD VERSION OF EDITED MESSAGES
   const finalMessages = [];
 
-  rawMessages.forEach((msg, index) => {
+  for (let i = 0; i < rawMessages.length; i++) {
 
-    // IF NOT EDITED
+    const msg =
+      rawMessages[i];
+
+    // IF MESSAGE IS NOT EDITED
     if (!msg.isEdited) {
 
-      // LOOK FOR EDITED VERSION
-      const editedExists =
-        rawMessages.some(other => {
+      // CHECK NEXT MESSAGE
+      const next =
+        rawMessages[i + 1];
 
-          // MUST BE EDITED
-          if (!other.isEdited) {
-            return false;
-          }
+      // IF NEXT MESSAGE IS EDITED
+      // BY SAME PERSON
+      // REMOVE OLD VERSION
+      if (
+        next &&
+        next.isEdited &&
+        next.sender === msg.sender
+      ) {
 
-          // SAME PERSON
-          if (other.sender !== msg.sender) {
-            return false;
-          }
+        continue;
 
-          // EMPTY TEXT SAFETY
-          if (!other.text || !msg.text) {
-            return false;
-          }
-
-          // SIMILAR MESSAGE
-          const a =
-            other.text.toLowerCase();
-
-          const b =
-            msg.text.toLowerCase();
-
-          return (
-            a.includes(b) ||
-            b.includes(a)
-          );
-
-        });
-
-      // SKIP OLD VERSION
-      if (editedExists) {
-        return;
       }
 
     }
 
     finalMessages.push(msg);
 
-  });
+  }
 
   // INSTAGRAM ORDER
   finalMessages.reverse();
 
-  // RENDER
+  // RENDER CHAT
   function render(filter = "") {
 
     chat.innerHTML = "";
@@ -310,6 +291,7 @@ fetch('message1.html')
       const safeSender =
         (sender || "").toLowerCase();
 
+      // SEARCH FILTER
       if (
         filter &&
         !safeText.includes(filter.toLowerCase()) &&
@@ -372,6 +354,7 @@ fetch('message1.html')
 
     });
 
+    // START AT BOTTOM
     chat.scrollTop =
       chat.scrollHeight;
 
