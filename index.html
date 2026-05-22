@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>🕊️❤️</title>
+
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -11,6 +14,7 @@
 
 <!-- LOGIN -->
 <div id="loginScreen">
+
   <div class="login-box">
 
     <h2>K&R Memories</h2>
@@ -28,6 +32,7 @@
     <p id="error"></p>
 
   </div>
+
 </div>
 
 <!-- SITE -->
@@ -82,7 +87,7 @@ const chat =
 const siteContent =
   document.getElementById("siteContent");
 
-// HIDE SITE
+// HIDE SITE UNTIL PASSWORD
 siteContent.style.visibility = "hidden";
 
 // PASSWORD
@@ -91,7 +96,7 @@ function checkPassword() {
   const password =
     document.getElementById("passwordInput").value;
 
-  if(password === "iloveyou") {
+  if (password === "iloveyou") {
 
     document.getElementById("loginScreen")
       .style.display = "none";
@@ -107,7 +112,7 @@ function checkPassword() {
 
 }
 
-// LOAD CHAT
+// LOAD INSTAGRAM HTML
 fetch('message1.html')
 
 .then(res => res.text())
@@ -124,9 +129,7 @@ fetch('message1.html')
     );
 
   const messages =
-    Array.from(
-      doc.querySelectorAll('div.pam')
-    );
+    doc.querySelectorAll('div.pam');
 
   const finalMessages = [];
 
@@ -144,7 +147,7 @@ fetch('message1.html')
 
   }
 
-  // DETECT SYSTEM MESSAGES
+  // REMOVE SYSTEM MESSAGES
   function isSystemMessage(text = "") {
 
     const t =
@@ -157,15 +160,24 @@ fetch('message1.html')
 
   }
 
-  // DETECT LIKES
-  function detectLiked(text = "") {
+  // WHO REACTED
+  function getReaction(text = "") {
 
-    return (
+    if (
       text.includes("❤️Khloe") ||
+      text.includes("❤Khloe")
+    ) {
+      return "Khloe";
+    }
+
+    if (
       text.includes("❤️Rylen") ||
-      text.includes("❤Khloe") ||
       text.includes("❤Rylen")
-    );
+    ) {
+      return "Rylen";
+    }
+
+    return null;
 
   }
 
@@ -182,25 +194,25 @@ fetch('message1.html')
       ?.innerText
       ?.trim();
 
+    if (!sender || !time) return;
+
     const textBlock =
       msg.querySelector('div._a6-p');
-
-    if (!sender || !time) return;
 
     let rawText =
       textBlock
       ? textBlock.innerText.trim()
-      : "";
+      : '';
 
     if (isSystemMessage(rawText)) return;
 
     const isEdited =
-      rawText.includes("(edited)");
+      rawText.includes('(edited)');
 
-    const liked =
-      detectLiked(rawText);
+    const reaction =
+      getReaction(rawText);
 
-    const text =
+    let text =
       cleanText(rawText);
 
     // REELS
@@ -209,32 +221,28 @@ fetch('message1.html')
         /https?:\/\/(www\.)?instagram\.com\/reel\/[^\s]+/
       );
 
-    const finalText =
-      reelMatch
-      ? reelMatch[0]
-      : text;
+    if (reelMatch) {
+      text = reelMatch[0];
+    }
 
     finalMessages.push({
       sender,
       time,
-      text: finalText,
+      text,
       isEdited,
-      liked
+      reaction
     });
 
   });
 
-  // REMOVE OLD VERSION OF EDITED MESSAGES
-  const deduped = [];
+  // REMOVE OLD UNEDITED DUPLICATES
+  const cleaned = [];
 
-  finalMessages.forEach((msg, index) => {
+  finalMessages.forEach((msg, i) => {
 
     const next =
-      finalMessages[index + 1];
+      finalMessages[i + 1];
 
-    // if same sender + same time
-    // and next one is edited
-    // remove old unedited one
     if (
       next &&
       msg.sender === next.sender &&
@@ -245,31 +253,25 @@ fetch('message1.html')
       return;
     }
 
-    deduped.push(msg);
+    cleaned.push(msg);
 
   });
 
-  // REVERSE SO NEWEST IS BOTTOM
-  deduped.reverse();
+  // NEWEST AT BOTTOM
+  cleaned.reverse();
 
-  // RENDER
+  // RENDER CHAT
   function render(filter = "") {
 
     chat.innerHTML = "";
 
-    deduped.forEach(({
-      sender,
-      time,
-      text,
-      isEdited,
-      liked
-    }) => {
+    cleaned.forEach(msg => {
 
       const safeText =
-        (text || "").toLowerCase();
+        (msg.text || "").toLowerCase();
 
       const safeSender =
-        (sender || "").toLowerCase();
+        (msg.sender || "").toLowerCase();
 
       if (
         filter &&
@@ -283,30 +285,30 @@ fetch('message1.html')
         document.createElement('div');
 
       bubble.className =
-        sender === 'Rylen'
+        msg.sender === 'Rylen'
         ? 'message you'
         : 'message her';
 
       bubble.innerHTML = `
 
         <div class="name">
-          ${sender}
+          ${msg.sender}
         </div>
 
         ${
-          text
+          msg.text
           ? `
             <div class="bubble-wrap">
 
               <div class="bubble">
-                ${text}
+                ${msg.text}
               </div>
 
               ${
-                liked
+                msg.reaction
                 ? `
-                  <div class="like-tag">
-                    ❤️
+                  <div class="liked">
+                    ❤️ ${msg.reaction}
                   </div>
                 `
                 : ''
@@ -317,16 +319,20 @@ fetch('message1.html')
           : ''
         }
 
-        <div class="meta">
-          ${
-            isEdited
-            ? `<span class="edited">edited</span>`
-            : ''
-          }
-        </div>
+        ${
+          msg.isEdited
+          ? `
+            <div class="meta">
+              <span class="edited">
+                edited
+              </span>
+            </div>
+          `
+          : ''
+        }
 
         <div class="time">
-          ${time}
+          ${msg.time}
         </div>
 
       `;
@@ -335,7 +341,7 @@ fetch('message1.html')
 
     });
 
-    // START AT BOTTOM
+    // SCROLL TO BOTTOM
     chat.scrollTop =
       chat.scrollHeight;
 
@@ -348,7 +354,7 @@ fetch('message1.html')
   document
     .getElementById("searchInput")
 
-    .addEventListener("input", (e) => {
+    .addEventListener("input", e => {
 
       render(e.target.value);
 
